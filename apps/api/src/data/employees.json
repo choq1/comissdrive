@@ -1,0 +1,72 @@
+[
+  {
+    "id": "emp_001",
+    "code": "E001",
+    "name": "Ana Silva",
+    "role": "Sales Executive",
+    "department": "Sales",
+    "baseSalary": 3500,
+    "tier": "Gold",
+    "status": "active"
+  },
+  {
+    "id": "emp_002",
+    "code": "E002",
+    "name": "Carlos Santos",
+    "role": "Account Manager",
+    "department": "Account Mgmt",
+    "baseSalary": 3200,
+    "tier": "Silver",
+    "status": "active"
+  },
+  {
+    "id": "emp_003",
+    "code": "E003",
+    "name": "Martin Mordan",
+    "role": "Sales Executive",
+    "department": "Sales",
+    "baseSalary": 3400,
+    "tier": "Gold",
+    "status": "active"
+  },
+  {
+    "id": "emp_004",
+    "code": "E004",
+    "name": "Michan Kanns",
+    "role": "Account Manager",
+    "department": "Account Mgmt",
+    "baseSalary": 3100,
+    "tier": "Silver",
+    "status": "active"
+  },
+  {
+    "id": "emp_005",
+    "code": "E005",
+    "name": "Asnen Karena",
+    "role": "Sales Executive",
+    "department": "Sales",
+    "baseSalary": 3000,
+    "tier": "Silver",
+    "status": "active"
+  },
+  {
+    "id": "emp_006",
+    "code": "E006",
+    "name": "Holdan Raran",
+    "role": "Sales Executive",
+    "department": "Sales",
+    "baseSalary": 2900,
+    "tier": "Silver",
+    "status": "active"
+  },
+  {
+    "id": "emp_007",
+    "code": "E007",
+    "name": "John Rounier",
+    "role": "Account Manager",
+    "department": "Account Mgmt",
+    "baseSalary": 3000,
+    "tier": "Silver",
+    "status": "active"
+  }
+]

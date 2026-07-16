@@ -1,0 +1,47 @@
+{
+  "rules": [
+    {
+      "id": "rule_base_sales",
+      "name": "Base Rule - Sales",
+      "type": "base",
+      "scope": "department",
+      "appliesTo": "Sales",
+      "percentage": 5,
+      "threshold": null
+    },
+    {
+      "id": "rule_volume_sales",
+      "name": "Volume Bonus - Sales",
+      "type": "volumeBonus",
+      "scope": "department",
+      "appliesTo": "Sales",
+      "percentage": 2,
+      "threshold": 50000
+    },
+    {
+      "id": "rule_tiered_sales",
+      "name": "Tiered Structure - Sales",
+      "type": "tiered",
+      "scope": "department",
+      "appliesTo": "Sales",
+      "percentage": 0,
+      "threshold": null
+    }
+  ],
+  "tiers": [
+    {
+      "ruleId": "rule_tiered_sales",
+      "tierName": "Tier 1",
+      "minRevenue": 0,
+      "maxRevenue": 50000,
+      "percentage": 5
+    },
+    {
+      "ruleId": "rule_tiered_sales",
+      "tierName": "Tier 2",
+      "minRevenue": 50000,
+      "maxRevenue": null,
+      "percentage": 20
+    }
+  ]
+}

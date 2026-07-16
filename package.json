@@ -1,0 +1,28 @@
+{
+  "name": "comissionamento-saas",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web",
+    "build:api": "npm run build --workspace=apps/api",
+    "test": "npm run test --workspaces --if-present",
+    "prepare": "husky || exit 0"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10"
+  },
+  "lint-staged": {
+    "apps/api/**/*.ts": [
+      "bash -c 'cd apps/api && npx tsc --noEmit'"
+    ],
+    "apps/web/**/*.{ts,tsx}": [
+      "bash -c 'cd apps/web && npx eslint --max-warnings=0'"
+    ]
+  }
+}

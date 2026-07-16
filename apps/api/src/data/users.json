@@ -1,0 +1,14 @@
+[
+  {
+    "id": "user_001",
+    "name": "Romadon",
+    "email": "admin@commissioning.local",
+    "role": "admin"
+  },
+  {
+    "id": "user_002",
+    "name": "Gian Manager",
+    "email": "manager@commissioning.local",
+    "role": "manager"
+  }
+]

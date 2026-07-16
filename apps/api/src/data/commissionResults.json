@@ -1,0 +1,250 @@
+[
+  {
+    "employeeId": "emp_001",
+    "period": "2024-03",
+    "baseSalary": 3500,
+    "revenue": 42000,
+    "appliedRules": [
+      "rule_base_sales",
+      "rule_tiered_sales"
+    ],
+    "commissionAmount": 4200,
+    "totalPay": 7700,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_002",
+    "period": "2024-03",
+    "baseSalary": 3200,
+    "revenue": 25000,
+    "appliedRules": [],
+    "commissionAmount": 0,
+    "totalPay": 3200,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_003",
+    "period": "2024-03",
+    "baseSalary": 3400,
+    "revenue": 30000,
+    "appliedRules": [
+      "rule_base_sales",
+      "rule_tiered_sales"
+    ],
+    "commissionAmount": 3000,
+    "totalPay": 6400,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_004",
+    "period": "2024-03",
+    "baseSalary": 3100,
+    "revenue": 20000,
+    "appliedRules": [],
+    "commissionAmount": 0,
+    "totalPay": 3100,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_005",
+    "period": "2024-03",
+    "baseSalary": 3000,
+    "revenue": 18000,
+    "appliedRules": [
+      "rule_base_sales",
+      "rule_tiered_sales"
+    ],
+    "commissionAmount": 1800,
+    "totalPay": 4800,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_006",
+    "period": "2024-03",
+    "baseSalary": 2900,
+    "revenue": 12000,
+    "appliedRules": [
+      "rule_base_sales",
+      "rule_tiered_sales"
+    ],
+    "commissionAmount": 1200,
+    "totalPay": 4100,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_007",
+    "period": "2024-03",
+    "baseSalary": 3000,
+    "revenue": 15000,
+    "appliedRules": [],
+    "commissionAmount": 0,
+    "totalPay": 3000,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_001",
+    "period": "2024-04",
+    "baseSalary": 3500,
+    "revenue": 60000,
+    "appliedRules": [
+      "rule_base_sales",
+      "rule_volume_sales",
+      "rule_tiered_sales"
+    ],
+    "commissionAmount": 8700,
+    "totalPay": 12200,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_002",
+    "period": "2024-04",
+    "baseSalary": 3200,
+    "revenue": 28000,
+    "appliedRules": [],
+    "commissionAmount": 0,
+    "totalPay": 3200,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_003",
+    "period": "2024-04",
+    "baseSalary": 3400,
+    "revenue": 38000,
+    "appliedRules": [
+      "rule_base_sales",
+      "rule_tiered_sales"
+    ],
+    "commissionAmount": 3800,
+    "totalPay": 7200,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_004",
+    "period": "2024-04",
+    "baseSalary": 3100,
+    "revenue": 24000,
+    "appliedRules": [],
+    "commissionAmount": 0,
+    "totalPay": 3100,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_005",
+    "period": "2024-04",
+    "baseSalary": 3000,
+    "revenue": 25000,
+    "appliedRules": [
+      "rule_base_sales",
+      "rule_tiered_sales"
+    ],
+    "commissionAmount": 2500,
+    "totalPay": 5500,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_006",
+    "period": "2024-04",
+    "baseSalary": 2900,
+    "revenue": 14000,
+    "appliedRules": [
+      "rule_base_sales",
+      "rule_tiered_sales"
+    ],
+    "commissionAmount": 1400,
+    "totalPay": 4300,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_007",
+    "period": "2024-04",
+    "baseSalary": 3000,
+    "revenue": 18000,
+    "appliedRules": [],
+    "commissionAmount": 0,
+    "totalPay": 3000,
+    "status": "paid"
+  },
+  {
+    "employeeId": "emp_001",
+    "period": "2024-05",
+    "baseSalary": 3500,
+    "revenue": 80000,
+    "appliedRules": [
+      "rule_base_sales",
+      "rule_volume_sales",
+      "rule_tiered_sales"
+    ],
+    "commissionAmount": 14100,
+    "totalPay": 17600,
+    "status": "pending"
+  },
+  {
+    "employeeId": "emp_002",
+    "period": "2024-05",
+    "baseSalary": 3200,
+    "revenue": 32000,
+    "appliedRules": [],
+    "commissionAmount": 0,
+    "totalPay": 3200,
+    "status": "pending"
+  },
+  {
+    "employeeId": "emp_003",
+    "period": "2024-05",
+    "baseSalary": 3400,
+    "revenue": 45000,
+    "appliedRules": [
+      "rule_base_sales",
+      "rule_tiered_sales"
+    ],
+    "commissionAmount": 4500,
+    "totalPay": 7900,
+    "status": "pending"
+  },
+  {
+    "employeeId": "emp_004",
+    "period": "2024-05",
+    "baseSalary": 3100,
+    "revenue": 28000,
+    "appliedRules": [],
+    "commissionAmount": 0,
+    "totalPay": 3100,
+    "status": "pending"
+  },
+  {
+    "employeeId": "emp_005",
+    "period": "2024-05",
+    "baseSalary": 3000,
+    "revenue": 30000,
+    "appliedRules": [
+      "rule_base_sales",
+      "rule_tiered_sales"
+    ],
+    "commissionAmount": 3000,
+    "totalPay": 6000,
+    "status": "pending"
+  },
+  {
+    "employeeId": "emp_006",
+    "period": "2024-05",
+    "baseSalary": 2900,
+    "revenue": 15000,
+    "appliedRules": [
+      "rule_base_sales",
+      "rule_tiered_sales"
+    ],
+    "commissionAmount": 1500,
+    "totalPay": 4400,
+    "status": "pending"
+  },
+  {
+    "employeeId": "emp_007",
+    "period": "2024-05",
+    "baseSalary": 3000,
+    "revenue": 20000,
+    "appliedRules": [],
+    "commissionAmount": 0,
+    "totalPay": 3000,
+    "status": "pending"
+  }
+]

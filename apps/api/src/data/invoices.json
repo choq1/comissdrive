@@ -1,0 +1,27 @@
+[
+  {
+    "id": "200000006",
+    "employeeId": "emp_001",
+    "period": "2024-01",
+    "amount": 17000,
+    "status": "paid",
+    "dueDate": "2024-01-25",
+    "paidDate": "2024-01-25"
+  },
+  {
+    "id": "200000007",
+    "employeeId": "emp_002",
+    "period": "2023-10",
+    "amount": 10000,
+    "status": "pending",
+    "dueDate": "2023-10-22"
+  },
+  {
+    "id": "200000008",
+    "employeeId": "emp_006",
+    "period": "2022-01",
+    "amount": 13000,
+    "status": "approved",
+    "dueDate": "2022-01-21"
+  }
+]

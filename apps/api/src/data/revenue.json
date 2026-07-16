@@ -1,0 +1,128 @@
+[
+  {
+    "id": "rev_001",
+    "employeeId": "emp_001",
+    "period": "2024-03",
+    "revenueAmount": 42000
+  },
+  {
+    "id": "rev_002",
+    "employeeId": "emp_002",
+    "period": "2024-03",
+    "revenueAmount": 25000
+  },
+  {
+    "id": "rev_003",
+    "employeeId": "emp_003",
+    "period": "2024-03",
+    "revenueAmount": 30000
+  },
+  {
+    "id": "rev_004",
+    "employeeId": "emp_004",
+    "period": "2024-03",
+    "revenueAmount": 20000
+  },
+  {
+    "id": "rev_005",
+    "employeeId": "emp_005",
+    "period": "2024-03",
+    "revenueAmount": 18000
+  },
+  {
+    "id": "rev_006",
+    "employeeId": "emp_006",
+    "period": "2024-03",
+    "revenueAmount": 12000
+  },
+  {
+    "id": "rev_007",
+    "employeeId": "emp_007",
+    "period": "2024-03",
+    "revenueAmount": 15000
+  },
+  {
+    "id": "rev_008",
+    "employeeId": "emp_001",
+    "period": "2024-04",
+    "revenueAmount": 60000
+  },
+  {
+    "id": "rev_009",
+    "employeeId": "emp_002",
+    "period": "2024-04",
+    "revenueAmount": 28000
+  },
+  {
+    "id": "rev_010",
+    "employeeId": "emp_003",
+    "period": "2024-04",
+    "revenueAmount": 38000
+  },
+  {
+    "id": "rev_011",
+    "employeeId": "emp_004",
+    "period": "2024-04",
+    "revenueAmount": 24000
+  },
+  {
+    "id": "rev_012",
+    "employeeId": "emp_005",
+    "period": "2024-04",
+    "revenueAmount": 25000
+  },
+  {
+    "id": "rev_013",
+    "employeeId": "emp_006",
+    "period": "2024-04",
+    "revenueAmount": 14000
+  },
+  {
+    "id": "rev_014",
+    "employeeId": "emp_007",
+    "period": "2024-04",
+    "revenueAmount": 18000
+  },
+  {
+    "id": "rev_015",
+    "employeeId": "emp_001",
+    "period": "2024-05",
+    "revenueAmount": 80000
+  },
+  {
+    "id": "rev_016",
+    "employeeId": "emp_002",
+    "period": "2024-05",
+    "revenueAmount": 32000
+  },
+  {
+    "id": "rev_017",
+    "employeeId": "emp_003",
+    "period": "2024-05",
+    "revenueAmount": 45000
+  },
+  {
+    "id": "rev_018",
+    "employeeId": "emp_004",
+    "period": "2024-05",
+    "revenueAmount": 28000
+  },
+  {
+    "id": "rev_019",
+    "employeeId": "emp_005",
+    "period": "2024-05",
+    "revenueAmount": 30000
+  },
+  {
+    "id": "rev_020",
+    "employeeId": "emp_006",
+    "period": "2024-05",
+    "revenueAmount": 15000
+  },
+  {
+    "id": "rev_021",
+    "employeeId": "emp_007",
+    "period": "2024-05",
+    "revenueAmount": 20000
+  }
+]
