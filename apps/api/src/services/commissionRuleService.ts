@@ -50,6 +50,36 @@ export const commissionRuleService = {
     if (filtered.length === data.rules.length) return false;
 
     data.rules = filtered;
+    data.tiers = data.tiers.filter((tier) => tier.ruleId !== id);
+    await writeData(FILE, data);
+    return true;
+  },
+
+  async createTier(input: Omit<CommissionTier, "id">): Promise<CommissionTier> {
+    const data = await readData<RulesFile>(FILE);
+    const created: CommissionTier = { ...input, id: `tier_${randomUUID()}` };
+    data.tiers.push(created);
+    await writeData(FILE, data);
+    return created;
+  },
+
+  async updateTier(id: string, patch: Partial<Omit<CommissionTier, "id">>): Promise<CommissionTier | undefined> {
+    const data = await readData<RulesFile>(FILE);
+    const index = data.tiers.findIndex((tier) => tier.id === id);
+    if (index === -1) return undefined;
+
+    const updated = { ...data.tiers[index], ...patch, id } as CommissionTier;
+    data.tiers[index] = updated;
+    await writeData(FILE, data);
+    return updated;
+  },
+
+  async removeTier(id: string): Promise<boolean> {
+    const data = await readData<RulesFile>(FILE);
+    const filtered = data.tiers.filter((tier) => tier.id !== id);
+    if (filtered.length === data.tiers.length) return false;
+
+    data.tiers = filtered;
     await writeData(FILE, data);
     return true;
   },

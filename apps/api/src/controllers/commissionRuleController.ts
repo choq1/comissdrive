@@ -1,6 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { commissionRuleService } from "../services/commissionRuleService";
-import { commissionRuleSchema, commissionRuleUpdateSchema } from "../schemas/rule.schema";
+import {
+  commissionRuleSchema,
+  commissionRuleUpdateSchema,
+  commissionTierSchema,
+  commissionTierUpdateSchema,
+} from "../schemas/rule.schema";
 import { HttpError } from "../middleware/errorHandler";
 
 export const commissionRuleController = {
@@ -55,6 +60,37 @@ export const commissionRuleController = {
     try {
       const removed = await commissionRuleService.remove(req.params.id);
       if (!removed) throw new HttpError(404, "Commission rule not found");
+      res.status(204).send();
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async createTier(req: Request, res: Response, next: NextFunction) {
+    try {
+      const input = commissionTierSchema.parse(req.body);
+      const tier = await commissionRuleService.createTier(input);
+      res.status(201).json(tier);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async updateTier(req: Request, res: Response, next: NextFunction) {
+    try {
+      const patch = commissionTierUpdateSchema.parse(req.body);
+      const tier = await commissionRuleService.updateTier(req.params.id, patch);
+      if (!tier) throw new HttpError(404, "Commission tier not found");
+      res.json(tier);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async removeTier(req: Request, res: Response, next: NextFunction) {
+    try {
+      const removed = await commissionRuleService.removeTier(req.params.id);
+      if (!removed) throw new HttpError(404, "Commission tier not found");
       res.status(204).send();
     } catch (err) {
       next(err);

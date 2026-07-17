@@ -36,6 +36,7 @@ export interface CommissionRule {
 }
 
 export interface CommissionTier {
+  id: string;
   ruleId: string;
   tierName: string;
   minRevenue: number;
@@ -76,4 +77,8 @@ export interface User {
   email: string;
   role: UserRole;
   employeeId?: string;
+  passwordHash: string;
 }
+
+/** Shape que a API devolve nas respostas HTTP — nunca inclui passwordHash. */
+export type PublicUser = Omit<User, "passwordHash">;

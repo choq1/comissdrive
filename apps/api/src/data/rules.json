@@ -30,6 +30,7 @@
   ],
   "tiers": [
     {
+      "id": "tier_sales_1",
       "ruleId": "rule_tiered_sales",
       "tierName": "Tier 1",
       "minRevenue": 0,
@@ -37,6 +38,7 @@
       "percentage": 5
     },
     {
+      "id": "tier_sales_2",
       "ruleId": "rule_tiered_sales",
       "tierName": "Tier 2",
       "minRevenue": 50000,

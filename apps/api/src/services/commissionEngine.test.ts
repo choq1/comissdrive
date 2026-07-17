@@ -44,8 +44,8 @@ const tieredRule: CommissionRule = {
 };
 
 const tiers: CommissionTier[] = [
-  { ruleId: "rule_tiered", tierName: "Tier 1", minRevenue: 0, maxRevenue: 50000, percentage: 5 },
-  { ruleId: "rule_tiered", tierName: "Tier 2", minRevenue: 50000, maxRevenue: null, percentage: 20 },
+  { id: "tier_1", ruleId: "rule_tiered", tierName: "Tier 1", minRevenue: 0, maxRevenue: 50000, percentage: 5 },
+  { id: "tier_2", ruleId: "rule_tiered", tierName: "Tier 2", minRevenue: 50000, maxRevenue: null, percentage: 20 },
 ];
 
 describe("calculateCommission", () => {

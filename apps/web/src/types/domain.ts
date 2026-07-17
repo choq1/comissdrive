@@ -36,6 +36,7 @@ export interface CommissionRule {
 }
 
 export interface CommissionTier {
+  id: string;
   ruleId: string;
   tierName: string;
   minRevenue: number;

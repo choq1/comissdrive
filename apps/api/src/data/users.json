@@ -3,12 +3,14 @@
     "id": "user_001",
     "name": "Romadon",
     "email": "admin@commissioning.local",
-    "role": "admin"
+    "role": "admin",
+    "passwordHash": "$2b$10$nN64YrIBssFw.ScXlXzex.htNdQ//q8mZWOzesVbj1zDqGxTK1dfK"
   },
   {
     "id": "user_002",
     "name": "Gian Manager",
     "email": "manager@commissioning.local",
-    "role": "manager"
+    "role": "manager",
+    "passwordHash": "$2b$10$nwuRt4l1ILxim8iTSXG87OgSkg3ie0yXGfc26G0BKFK.OORw3SEwS"
   }
 ]

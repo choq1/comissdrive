@@ -13,3 +13,16 @@ export const commissionRuleUpdateSchema = commissionRuleSchema.partial();
 
 export type CommissionRuleInput = z.infer<typeof commissionRuleSchema>;
 export type CommissionRuleUpdateInput = z.infer<typeof commissionRuleUpdateSchema>;
+
+export const commissionTierSchema = z.object({
+  ruleId: z.string().min(1),
+  tierName: z.string().min(1),
+  minRevenue: z.number().nonnegative(),
+  maxRevenue: z.number().nonnegative().nullable(),
+  percentage: z.number().nonnegative(),
+});
+
+export const commissionTierUpdateSchema = commissionTierSchema.partial();
+
+export type CommissionTierInput = z.infer<typeof commissionTierSchema>;
+export type CommissionTierUpdateInput = z.infer<typeof commissionTierUpdateSchema>;
