@@ -1,9 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { readData, writeData } from "../lib/jsonStore";
+import { prisma } from "../lib/prisma";
 import { commissionResultService } from "./commissionResultService";
 import { employeeService } from "./employeeService";
 import { revenueService } from "./revenueService";
-import { CommissionResult } from "../types/domain";
 
 // Período fictício e isolado só para este teste, para não colidir com o seed real
 // de revenue.json/commissionResults.json (2024-03/04/05) usado pelo frontend.
@@ -24,11 +23,7 @@ afterAll(async () => {
     await revenueService.remove(id);
   }
 
-  const results = await readData<CommissionResult[]>("commissionResults.json");
-  await writeData(
-    "commissionResults.json",
-    results.filter((r) => r.period !== PERIOD)
-  );
+  await prisma.commissionResult.deleteMany({ where: { period: PERIOD } });
 });
 
 describe("commissionResultService", () => {

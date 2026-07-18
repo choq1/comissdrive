@@ -1,8 +1,7 @@
 import request from "supertest";
 import { afterAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
-import { readData, writeData } from "../lib/jsonStore";
-import { CommissionResult } from "../types/domain";
+import { prisma } from "../lib/prisma";
 import { authCookie } from "../test-utils/authCookie";
 
 const app = createApp();
@@ -13,11 +12,7 @@ describe("Commissions routes", () => {
   afterAll(async () => {
     if (revenueId) await request(app).delete(`/api/revenue/${revenueId}`).set("Cookie", authCookie());
 
-    const results = await readData<CommissionResult[]>("commissionResults.json");
-    await writeData(
-      "commissionResults.json",
-      results.filter((r) => r.period !== PERIOD)
-    );
+    await prisma.commissionResult.deleteMany({ where: { period: PERIOD } });
   });
 
   it("calculates commissions for a period, lists them and moves through the status workflow", async () => {

@@ -25,7 +25,7 @@ O projeto vive em `C:\xampp\htdocs\Projeto Piloto` (fora de qualquer pasta sincr
 |---|---|
 | Frontend | Next.js (React + TypeScript), Tailwind CSS, Recharts (gráficos) |
 | Backend | Node.js, Express, TypeScript |
-| Persistência | JSON local (`apps/api/src/data/*.json`) — migração planejada para PostgreSQL |
+| Persistência | PostgreSQL (Supabase, free tier) via Prisma ORM — migrado da persistência JSON local na fase 7 |
 | Monorepo | npm workspaces (`apps/web`, `apps/api`) |
 
 ## Estrutura de pastas
@@ -39,7 +39,8 @@ Projeto Piloto/
 │   ├── 03-motor-calculo.md
 │   ├── 04-frontend-telas.md
 │   ├── 05-settings-permissoes.md
-│   └── 06-autenticacao-permissoes.md
+│   ├── 06-autenticacao-permissoes.md
+│   └── 07-migracao-postgresql-prisma.md
 ├── package.json                # root, npm workspaces
 ├── .husky/                     # hooks de git (pre-commit, pre-push) — ativos
 ├── .gitignore
@@ -58,15 +59,20 @@ Projeto Piloto/
     │       ├── lib/            # api.ts (fetch tipado por entidade, cache: "no-store", + mutações POST/PUT/DELETE), format.ts
     │       └── types/          # domain.ts — cópia manual do domain.ts da API (ver nota de dívida técnica abaixo)
     └── api/                    # Express — backend
+        ├── prisma/
+        │   ├── schema.prisma   # datasource postgresql + modelos (fase 7)
+        │   ├── migrations/     # histórico de migrations do Prisma Migrate
+        │   ├── seed.ts         # popula o banco a partir de prisma/seed-data/*.json
+        │   └── seed-data/      # fixtures de seed (antigo conteúdo de src/data/*.json)
+        ├── prisma.config.ts    # config do Prisma CLI (schema path, seed command)
         └── src/
             ├── app.ts          # cria o Express app (usado também nos testes)
             ├── index.ts        # entrypoint: só chama app.listen
             ├── routes/         # employees, invoices, rules (+tiers), revenue, commissions, users (+ *.test.ts colocados)
             ├── controllers/
-            ├── services/       # CRUD sobre os JSON + commissionEngine.ts (motor de cálculo) + commissionResultService.ts (persistência/workflow)
+            ├── services/       # CRUD sobre o Prisma Client + commissionEngine.ts (motor de cálculo) + commissionResultService.ts (persistência/workflow)
             ├── schemas/        # validação zod por entidade
-            ├── lib/            # jsonStore.ts (leitura/escrita), crudRepository.ts (fábrica de CRUD)
-            ├── data/           # employees.json, rules.json, invoices.json, revenue.json, commissionResults.json, users.json
+            ├── lib/            # prisma.ts (singleton do PrismaClient), crudRepository.ts (fábrica de CRUD sobre um delegate Prisma)
             ├── scripts/        # seedPasswords.ts (seed de senha padrão para usuários de teste, fase 6)
             └── middleware/     # errorHandler.ts, auth.ts (requireAuth/requireRole, fase 6)
 ```
@@ -95,14 +101,26 @@ Implementado em `services/commissionEngine.ts` (função pura `calculateCommissi
 - `cálculoPorTiers` é **progressivo** (estilo faixa de IR): cada faixa de faturamento paga só a sua própria %, sem saltos ao cruzar um limite.
 - Todas as regras aplicáveis se somam (base + volume bonus + tiers podem coexistir para o mesmo funcionário).
 
-`services/commissionResultService.ts` persiste o resultado em `commissionResults.json` com `status` inicial `pending`. Resultados `approved`/`paid` ficam congelados — recalcular um período não os sobrescreve. Transição de status é sequencial e só para frente: `pending → approved → paid`.
+`services/commissionResultService.ts` persiste o resultado na tabela `CommissionResult` (chave composta `employeeId + period`) com `status` inicial `pending`. Resultados `approved`/`paid` ficam congelados — recalcular um período não os sobrescreve. Transição de status é sequencial e só para frente: `pending → approved → paid`.
 
 As regras (`CommissionRule` / `CommissionTier`) são configuráveis pelo admin na tela de Settings ("Global Settings & Rules").
+
+## Persistência (PostgreSQL + Prisma, fase 7)
+
+- **Banco**: PostgreSQL gerenciado no Supabase (free tier), conectado via `DATABASE_URL` (`apps/api/.env`, nunca commitado). Migrations e seed usam o **session pooler** do Supabase (host `*.pooler.supabase.com`, porta `5432`) — a porta `6543` (transaction pooler) não suporta os recursos que o `prisma migrate` precisa (prepared statements/advisory locks) e trava a operação.
+- **Schema**: `apps/api/prisma/schema.prisma`, um modelo Prisma por entidade de `types/domain.ts`. Enums do Prisma espelham os union types TS. `CommissionResult` não tem `id` próprio — chave primária composta `@@id([employeeId, period])`, igual ao shape do domínio. `CommissionTier.ruleId` tem `onDelete: Cascade` — apagar uma `CommissionRule` remove seus tiers automaticamente (antes era feito manualmente em código).
+- **IDs**: continuam gerados em código como `` `${idPrefix}_${randomUUID()}` `` (`emp_...`, `rule_...`, `user_...`), não pelo Prisma — mantém o formato usado antes da migração.
+- **Acesso a dados**: `lib/prisma.ts` exporta um singleton `PrismaClient` (padrão `globalThis`, evita múltiplas instâncias no hot-reload do `ts-node-dev --respawn`). `lib/crudRepository.ts` é uma fábrica genérica sobre um delegate Prisma (`prisma.employee`, `prisma.user`, etc.) — mesma assinatura pública (`list/findById/create/update/remove`) de antes, então `controllers/*` não mudaram.
+- **Seed**: `apps/api/prisma/seed.ts` lê `prisma/seed-data/*.json` (cópia congelada dos antigos `src/data/*.json`) e popula o banco. Rodar com `npx prisma db seed --workspace=apps/api` (ou `cd apps/api && npx prisma db seed`).
+- **Testes**: os testes de integração (`routes/*.routes.test.ts`) rodam contra o mesmo `DATABASE_URL` de desenvolvimento — sem banco de teste isolado nem transação por teste (mesmo comportamento de antes, quando mutavam os JSON reais direto). **Melhoria futura registrada, não implementada**: banco de teste separado ou reset/transação por teste.
+- Dívida técnica conhecida: o Prisma 7 (major mais recente no momento da migração) exige `PrismaClient` com `adapter` de driver e move a `DATABASE_URL` para `prisma.config.ts` — decidiu-se fixar a dependência em `^6` para manter o schema com `datasource.url` direto e evitar esse escopo extra. Reavaliar o upgrade quando o ecossistema (guias, exemplos) estabilizar em torno da v7.
 
 ## Como rodar (após instalação das dependências)
 
 ```
 npm install              # na raiz, instala web + api via workspaces
+# apps/api/.env precisa de DATABASE_URL (Postgres) — ver .env.example
+npx prisma migrate dev --schema=apps/api/prisma/schema.prisma   # ou cd apps/api && npx prisma migrate dev
 npm run dev:api          # sobe o backend Express
 npm run dev:web          # sobe o frontend Next.js
 npm test                 # roda a suíte de testes de todos os workspaces (hoje: apps/api)
@@ -148,7 +166,7 @@ Validação de payload via `zod` (`src/schemas/`), erros padronizados em `{ erro
 ## Testes
 
 - **Framework**: Vitest + Supertest, na `apps/api` (`npm run test --workspace=apps/api` ou `npm test` na raiz).
-- Testes ficam colocados junto do código (`*.test.ts` ao lado do arquivo testado): unitários para `lib/jsonStore.ts`, integração (via Supertest contra `app.ts`) para cada grupo de rotas.
+- Testes ficam colocados junto do código (`*.test.ts` ao lado do arquivo testado): unitário para `commissionEngine.ts`, integração (via Supertest contra `app.ts`) para cada grupo de rotas — todos rodam contra o Postgres real (ver seção de Persistência acima sobre a ausência de banco de teste isolado).
 - `app.ts` existe separado de `index.ts` justamente para permitir importar o Express app nos testes sem abrir porta.
 - Frontend (`apps/web`) ainda não tem testes configurados — entra em fase futura junto das telas.
 
@@ -168,7 +186,7 @@ Cada fase gera um plano próprio salvo em `plan/`.
 4. **`plan/04-frontend-telas.md`** — Frontend: telas Dashboard, Employees, Commissions, Invoices consumindo a API (sidebar, KPIs, gráficos Recharts, tabelas). ✅
 5. **`plan/05-settings-permissoes.md`** — Tela Settings: editor de `CommissionRule`/`CommissionTier` (CRUD completo, antes só tinha leitura) + painel de gestão de `User` (CRUD novo, `/api/users`). Primeiras mutações client-side do app. ✅
 6. **`plan/06-autenticacao-permissoes.md`** — Autenticação (login via JWT em cookie httpOnly) e controle de acesso por role (admin vs manager), na API (middlewares `requireAuth`/`requireRole`) e no frontend (`proxy.ts`, guard em `/settings`, Sidebar filtrada por role). ✅
-7. Migração de JSON para PostgreSQL (com Prisma).
+7. **`plan/07-migracao-postgresql-prisma.md`** — Migração da persistência de JSON local para PostgreSQL (Supabase) via Prisma ORM: schema Prisma espelhando `types/domain.ts`, `lib/crudRepository.ts` reescrito sobre delegates Prisma, seed a partir dos antigos `data/*.json`. ✅
 8. Deploy.
 9. **CI/CD (GitHub Actions)** — quando o repositório for para o GitHub, workflow que roda `npm test` a cada push/PR, como camada adicional aos hooks locais. O push continua exigindo aprovação humana; o CI só impede merge/deploy com testes quebrados.
 

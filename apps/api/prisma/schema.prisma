@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EmployeeStatus {
+  active
+  inactive
+}
+
+enum CommissionTierLevel {
+  Gold
+  Silver
+}
+
+enum CommissionRuleType {
+  base
+  volumeBonus
+  tiered
+}
+
+enum CommissionRuleScope {
+  department
+  role
+  global
+}
+
+enum CommissionResultStatus {
+  pending
+  approved
+  paid
+}
+
+enum InvoiceStatus {
+  pending
+  approved
+  paid
+}
+
+enum UserRole {
+  admin
+  manager
+}
+
+model Employee {
+  id         String              @id
+  code       String
+  name       String
+  role       String
+  department String
+  baseSalary Float
+  tier       CommissionTierLevel
+  status     EmployeeStatus
+}
+
+model RevenueRecord {
+  id            String @id
+  employeeId    String
+  period        String
+  revenueAmount Float
+}
+
+model CommissionRule {
+  id         String               @id
+  name       String
+  type       CommissionRuleType
+  scope      CommissionRuleScope
+  appliesTo  String?
+  percentage Float
+  threshold  Float?
+  tiers      CommissionTier[]
+}
+
+model CommissionTier {
+  id         String         @id
+  ruleId     String
+  tierName   String
+  minRevenue Float
+  maxRevenue Float?
+  percentage Float
+  rule       CommissionRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+}
+
+model CommissionResult {
+  employeeId      String
+  period          String
+  baseSalary      Float
+  revenue         Float
+  appliedRules    String[]
+  commissionAmount Float
+  totalPay        Float
+  status          CommissionResultStatus
+
+  @@id([employeeId, period])
+}
+
+model Invoice {
+  id         String        @id
+  employeeId String
+  period     String
+  amount     Float
+  status     InvoiceStatus
+  dueDate    String
+  paidDate   String?
+}
+
+model User {
+  id           String   @id
+  name         String
+  email        String   @unique
+  role         UserRole
+  employeeId   String?
+  passwordHash String
+}

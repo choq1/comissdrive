@@ -66,7 +66,7 @@ export interface Invoice {
   amount: number;
   status: InvoiceStatus;
   dueDate: string;
-  paidDate?: string;
+  paidDate?: string | null;
 }
 
 export type UserRole = "admin" | "manager";
@@ -76,5 +76,5 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
-  employeeId?: string;
+  employeeId?: string | null;
 }

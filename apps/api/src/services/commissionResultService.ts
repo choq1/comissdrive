@@ -1,12 +1,10 @@
-import { readData, writeData } from "../lib/jsonStore";
+import { prisma } from "../lib/prisma";
 import { HttpError } from "../middleware/errorHandler";
 import { calculateCommission } from "./commissionEngine";
 import { commissionRuleService } from "./commissionRuleService";
 import { employeeService } from "./employeeService";
 import { revenueService } from "./revenueService";
 import { CommissionResult, CommissionResultStatus } from "../types/domain";
-
-const FILE = "commissionResults.json";
 
 const FROZEN_STATUSES: CommissionResultStatus[] = ["approved", "paid"];
 const ALLOWED_TRANSITIONS: Record<CommissionResultStatus, CommissionResultStatus | null> = {
@@ -17,68 +15,64 @@ const ALLOWED_TRANSITIONS: Record<CommissionResultStatus, CommissionResultStatus
 
 export const commissionResultService = {
   async list(filter: { period?: string; employeeId?: string } = {}): Promise<CommissionResult[]> {
-    const results = await readData<CommissionResult[]>(FILE);
-    return results.filter(
-      (r) => (!filter.period || r.period === filter.period) && (!filter.employeeId || r.employeeId === filter.employeeId)
-    );
+    return prisma.commissionResult.findMany({
+      where: {
+        ...(filter.period ? { period: filter.period } : {}),
+        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      },
+    });
   },
 
   async calculateForPeriod(period: string): Promise<CommissionResult[]> {
-    const [employees, revenueRecords, rules, tiers, existingResults] = await Promise.all([
+    const [employees, revenueRecords, rules, tiers] = await Promise.all([
       employeeService.list(),
       revenueService.list(),
       commissionRuleService.list(),
       commissionRuleService.listTiers(),
-      readData<CommissionResult[]>(FILE),
     ]);
 
     const activeEmployees = employees.filter((e) => e.status === "active");
-    const results = [...existingResults];
 
     for (const employee of activeEmployees) {
       const revenueRecord = revenueRecords.find((r) => r.employeeId === employee.id && r.period === period);
       if (!revenueRecord) continue;
 
-      const existingIndex = results.findIndex((r) => r.employeeId === employee.id && r.period === period);
-      if (existingIndex !== -1 && FROZEN_STATUSES.includes(results[existingIndex].status)) {
-        continue;
-      }
+      const existing = await prisma.commissionResult.findUnique({
+        where: { employeeId_period: { employeeId: employee.id, period } },
+      });
+      if (existing && FROZEN_STATUSES.includes(existing.status)) continue;
 
       const { commissionAmount, appliedRules } = calculateCommission(employee, revenueRecord.revenueAmount, rules, tiers);
-      const result: CommissionResult = {
-        employeeId: employee.id,
-        period,
+      const data = {
         baseSalary: employee.baseSalary,
         revenue: revenueRecord.revenueAmount,
         appliedRules,
         commissionAmount,
         totalPay: employee.baseSalary + commissionAmount,
-        status: "pending",
+        status: "pending" as CommissionResultStatus,
       };
 
-      if (existingIndex !== -1) {
-        results[existingIndex] = result;
-      } else {
-        results.push(result);
-      }
+      await prisma.commissionResult.upsert({
+        where: { employeeId_period: { employeeId: employee.id, period } },
+        create: { employeeId: employee.id, period, ...data },
+        update: data,
+      });
     }
 
-    await writeData(FILE, results);
-    return results.filter((r) => r.period === period);
+    return prisma.commissionResult.findMany({ where: { period } });
   },
 
   async updateStatus(employeeId: string, period: string, newStatus: CommissionResultStatus): Promise<CommissionResult> {
-    const results = await readData<CommissionResult[]>(FILE);
-    const index = results.findIndex((r) => r.employeeId === employeeId && r.period === period);
-    if (index === -1) throw new HttpError(404, "Commission result not found");
+    const current = await prisma.commissionResult.findUnique({ where: { employeeId_period: { employeeId, period } } });
+    if (!current) throw new HttpError(404, "Commission result not found");
 
-    const current = results[index].status;
-    if (ALLOWED_TRANSITIONS[current] !== newStatus) {
-      throw new HttpError(400, `Invalid status transition from "${current}" to "${newStatus}"`);
+    if (ALLOWED_TRANSITIONS[current.status] !== newStatus) {
+      throw new HttpError(400, `Invalid status transition from "${current.status}" to "${newStatus}"`);
     }
 
-    results[index] = { ...results[index], status: newStatus };
-    await writeData(FILE, results);
-    return results[index];
+    return prisma.commissionResult.update({
+      where: { employeeId_period: { employeeId, period } },
+      data: { status: newStatus },
+    });
   },
 };

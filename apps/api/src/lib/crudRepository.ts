@@ -1,48 +1,56 @@
 import { randomUUID } from "crypto";
-import { readData, writeData } from "./jsonStore";
+import { Prisma } from "@prisma/client";
+
+function isNotFoundError(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025";
+}
 
 export interface WithId {
   id: string;
 }
 
-/** Fábrica de CRUD genérico para arquivos JSON que guardam um array de entidades com `id`. */
-export function createCrudRepository<T extends WithId>(fileName: string, idPrefix: string) {
+interface PrismaDelegate<T> {
+  findMany(): Promise<T[]>;
+  findUnique(args: { where: { id: string } }): Promise<T | null>;
+  create(args: { data: T }): Promise<T>;
+  update(args: { where: { id: string }; data: Partial<T> }): Promise<T>;
+  delete(args: { where: { id: string } }): Promise<T>;
+}
+
+/** Fábrica de CRUD genérico sobre um delegate do Prisma Client para uma entidade com `id`. */
+export function createCrudRepository<T extends WithId>(delegate: PrismaDelegate<T>, idPrefix: string) {
   return {
     async list(): Promise<T[]> {
-      return readData<T[]>(fileName);
+      return delegate.findMany();
     },
 
     async findById(id: string): Promise<T | undefined> {
-      const items = await readData<T[]>(fileName);
-      return items.find((item) => item.id === id);
+      const item = await delegate.findUnique({ where: { id } });
+      return item ?? undefined;
     },
 
     async create(input: Omit<T, "id">): Promise<T> {
-      const items = await readData<T[]>(fileName);
-      const created = { ...input, id: `${idPrefix}_${randomUUID()}` } as T;
-      items.push(created);
-      await writeData(fileName, items);
-      return created;
+      const data = { ...input, id: `${idPrefix}_${randomUUID()}` } as T;
+      return delegate.create({ data });
     },
 
     async update(id: string, patch: Partial<Omit<T, "id">>): Promise<T | undefined> {
-      const items = await readData<T[]>(fileName);
-      const index = items.findIndex((item) => item.id === id);
-      if (index === -1) return undefined;
-
-      const updated = { ...items[index], ...patch, id } as T;
-      items[index] = updated;
-      await writeData(fileName, items);
-      return updated;
+      try {
+        return await delegate.update({ where: { id }, data: patch as Partial<T> });
+      } catch (error) {
+        if (isNotFoundError(error)) return undefined;
+        throw error;
+      }
     },
 
     async remove(id: string): Promise<boolean> {
-      const items = await readData<T[]>(fileName);
-      const filtered = items.filter((item) => item.id !== id);
-      if (filtered.length === items.length) return false;
-
-      await writeData(fileName, filtered);
-      return true;
+      try {
+        await delegate.delete({ where: { id } });
+        return true;
+      } catch (error) {
+        if (isNotFoundError(error)) return false;
+        throw error;
+      }
     },
   };
 }
