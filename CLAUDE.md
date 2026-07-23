@@ -33,14 +33,17 @@ O projeto vive em `C:\xampp\htdocs\Projeto Piloto` (fora de qualquer pasta sincr
 ```
 Projeto Piloto/
 ├── CLAUDE.md
-├── plan/                      # todo plano de trabalho criado fica salvo aqui (histórico)
+├── plan/                      # todo plano de trabalho criado fica salvo aqui (histórico, não editado depois de concluído)
 │   ├── 01-setup-inicial.md
 │   ├── 02-crud-testes-git.md
 │   ├── 03-motor-calculo.md
 │   ├── 04-frontend-telas.md
 │   ├── 05-settings-permissoes.md
 │   ├── 06-autenticacao-permissoes.md
-│   └── 07-migracao-postgresql-prisma.md
+│   ├── 07-migracao-postgresql-prisma.md
+│   ├── 08-internacionalizacao-pt-br-en.md
+│   └── 09-crud-employees-frontend.md
+├── guia/                      # manual operacional vivo — como adaptar/manter a ferramenta para um cliente (nome/marca, idioma, dados, usuários, env). Ver guia/README.md
 ├── package.json                # root, npm workspaces
 ├── .husky/                     # hooks de git (pre-commit, pre-push) — ativos
 ├── .gitignore
@@ -50,13 +53,18 @@ Projeto Piloto/
     │   └── src/
     │       ├── app/            # rotas: /dashboard, /employees, /commissions, /invoices, /settings
     │       ├── components/
-    │       │   ├── layout/     # Sidebar, PageHeader
+    │       │   ├── layout/     # Sidebar, PageHeader, LanguageToggle (fase 8)
     │       │   ├── ui/         # KpiCard, StatusBadge, DataTable, Modal, Input, Select, Button (genéricos)
     │       │   ├── dashboard/  # CommissionGrowthChart, TopPerformers
-    │       │   ├── employees/  # EmployeesTable (busca + filtro client-side)
+    │       │   ├── employees/  # EmployeesTable — CRUD completo (busca, filtro, criar/editar/excluir funcionário, admin-only) desde a fase 9
     │       │   ├── commissions/# TopCommissionedBarChart, DepartmentPieChart
     │       │   └── settings/   # RulesEditor (rules + tiers), UserPermissionsPanel — "use client", primeiros CRUDs client-side do app
-    │       ├── lib/            # api.ts (fetch tipado por entidade, cache: "no-store", + mutações POST/PUT/DELETE), format.ts
+    │       ├── contexts/       # UserContext (usuário logado), LanguageContext (idioma ativo + dicionário, fase 8)
+    │       ├── lib/
+    │       │   ├── i18n/       # dictionaries.ts (strings PT-BR/EN), getServerLocale.ts (lê cookie `locale` em Server Components) — fase 8
+    │       │   ├── api.ts      # fetch tipado por entidade (Server Components), cache: "no-store"
+    │       │   ├── apiClient.ts# mutações POST/PUT/DELETE (Client Components, credentials:"include")
+    │       │   └── format.ts   # formatCurrency/formatPeriodLabel — locale-aware desde a fase 8 (R$ em PT-BR, $ em EN, mesmo valor numérico)
     │       └── types/          # domain.ts — cópia manual do domain.ts da API (ver nota de dívida técnica abaixo)
     └── api/                    # Express — backend
         ├── prisma/
@@ -155,12 +163,13 @@ Validação de payload via `zod` (`src/schemas/`), erros padronizados em `{ erro
 - `contexts/UserContext.tsx` expõe o usuário logado (buscado uma vez em `layout.tsx` via `lib/session.ts`) para Client Components — usado pela `Sidebar` para esconder "Settings" de managers e mostrar o botão de logout.
 - **Seed de senha**: `apps/api/src/scripts/seedPasswords.ts` (`npm run seed:passwords --workspace=apps/api`) define a senha padrão `mudar123` para os usuários fictícios existentes (`admin@commissioning.local`, `manager@commissioning.local`) — ambiente de teste, não usar em produção.
 
-## Frontend (fases 4-5)
+## Frontend (fases 4-5, 8-9)
 
 - **Next.js 16.2.10 + React 19.2.4** — versão com breaking changes relevantes em relação ao Next.js "clássico" (ver `apps/web/AGENTS.md`, que manda checar `node_modules/next/dist/docs/` antes de mexer no App Router). O que já mudou e foi levado em conta: `params`/`searchParams` de página são `Promise` (nenhuma tela usa ainda, mas vale lembrar nas próximas); `fetch` em Server Components não é cacheado automaticamente nessa versão — por isso `lib/api.ts` usa `cache: "no-store"` explicitamente em toda chamada, garantindo dado sempre fresco independente do modelo de cache ativo no projeto.
 - **Padrão de leitura**: cada `app/*/page.tsx` é Server Component, busca direto da API Express via `lib/api.ts` e passa os dados como props para Client Components (`"use client"`) que cuidam de interatividade local (busca/filtro em `EmployeesTable`, gráficos Recharts).
 - **Padrão de mutação (fase 5 em diante)**: `RulesEditor`/`UserPermissionsPanel` são os primeiros Client Components a fazer `POST`/`PUT`/`DELETE` — chamam `lib/api.ts` direto contra a API Express (CORS aberto, `app.use(cors())` sem opções) e, após sucesso, chamam `router.refresh()` (`next/navigation`) para re-buscar os dados do Server Component pai. Sem Server Actions, sem lib de estado global.
-- **Telas**: `/login` (form email/senha, fase 6), `/dashboard` (KPIs, gráfico de tendência de comissão, top performers, pagamentos recentes), `/employees` (tabela com busca/filtro por department), `/commissions` (KPIs de analytics, gráfico de barras top 5, gráfico de pizza por department, invoices recentes), `/invoices` (tabela simples), `/settings` (editor de `CommissionRule`/`CommissionTier` + painel de `User` — admin-only, com enforcement real desde a fase 6: `proxy.ts` redireciona managers e a própria page reforça o guard).
+- **Telas**: `/login` (form email/senha, fase 6), `/dashboard` (KPIs, gráfico de tendência de comissão, top performers, pagamentos recentes), `/employees` (tabela com busca/filtro por department + CRUD completo admin-only desde a fase 9), `/commissions` (KPIs de analytics, gráfico de barras top 5, gráfico de pizza por department, invoices recentes), `/invoices` (tabela simples), `/settings` (editor de `CommissionRule`/`CommissionTier` + painel de `User` — admin-only, com enforcement real desde a fase 6: `proxy.ts` redireciona managers e a própria page reforça o guard).
+- **Internacionalização (fase 8)**: PT-BR (padrão) e EN, com botão de troca na Sidebar (`LanguageToggle.tsx`). Strings de interface vivem em `lib/i18n/dictionaries.ts` (tipado por `Dictionary`); Server Components leem o idioma via cookie `locale` (`getServerLocale.ts`), Client Components via `useLanguage()` (`LanguageContext.tsx`). `formatCurrency`/`formatPeriodLabel` (`lib/format.ts`) são locale-aware. **Dados de negócio (nome/department/role cadastrados pelo admin) não são traduzidos automaticamente** — ver `guia/02-idioma-pt-br-en.md` e `guia/03-funcionarios-e-dados.md`.
 - **Dívida técnica registrada**: `apps/web/src/types/domain.ts` é uma cópia manual de `apps/api/src/types/domain.ts` (sem pacote compartilhado no monorepo ainda) — ao mudar um, replicar a mudança no outro.
 
 ## Testes
@@ -187,11 +196,14 @@ Cada fase gera um plano próprio salvo em `plan/`.
 5. **`plan/05-settings-permissoes.md`** — Tela Settings: editor de `CommissionRule`/`CommissionTier` (CRUD completo, antes só tinha leitura) + painel de gestão de `User` (CRUD novo, `/api/users`). Primeiras mutações client-side do app. ✅
 6. **`plan/06-autenticacao-permissoes.md`** — Autenticação (login via JWT em cookie httpOnly) e controle de acesso por role (admin vs manager), na API (middlewares `requireAuth`/`requireRole`) e no frontend (`proxy.ts`, guard em `/settings`, Sidebar filtrada por role). ✅
 7. **`plan/07-migracao-postgresql-prisma.md`** — Migração da persistência de JSON local para PostgreSQL (Supabase) via Prisma ORM: schema Prisma espelhando `types/domain.ts`, `lib/crudRepository.ts` reescrito sobre delegates Prisma, seed a partir dos antigos `data/*.json`. ✅
-8. Deploy.
-9. **CI/CD (GitHub Actions)** — quando o repositório for para o GitHub, workflow que roda `npm test` a cada push/PR, como camada adicional aos hooks locais. O push continua exigindo aprovação humana; o CI só impede merge/deploy com testes quebrados.
+8. **`plan/08-internacionalizacao-pt-br-en.md`** — Internacionalização PT-BR/EN: dicionário de strings (`lib/i18n/dictionaries.ts`), `LanguageContext`/`LanguageToggle`, `formatCurrency`/`formatPeriodLabel` locale-aware (R$/$, sem conversão de câmbio). ✅
+9. **`plan/09-crud-employees-frontend.md`** — Tela de CRUD completo de Employee no frontend (`EmployeesTable.tsx`): botão adicionar + editar/excluir por linha, admin-only, mesmo padrão de `RulesEditor`/`UserPermissionsPanel`. Backend já tinha os endpoints prontos. ✅
+10. Deploy.
+11. **CI/CD (GitHub Actions)** — quando o repositório for para o GitHub, workflow que roda `npm test` a cada push/PR, como camada adicional aos hooks locais. O push continua exigindo aprovação humana; o CI só impede merge/deploy com testes quebrados.
 
 ## Convenções
 
 - Todo plano de implementação (mesmo os incrementais) é salvo em `plan/NN-titulo.md`, numerado sequencialmente.
 - Este `CLAUDE.md` deve ser atualizado sempre que decisões de arquitetura, modelo de dados ou stack mudarem.
+- **Todo plano implementado que afete algo coberto por `guia/` (nome/marca, idiomas, dados cadastrais editáveis, papéis de usuário, variáveis de ambiente, deploy) deve terminar atualizando o arquivo correspondente em `guia/`.** Se o plano introduzir um tópico de manutenção novo, criar `guia/NN-topico.md` seguindo a numeração sequencial (ver `guia/README.md`). Diferente de `plan/` (histórico, não editado depois de concluído), os arquivos de `guia/` são vivos — refletem sempre o estado atual do produto, para consulta na hora de adaptar a ferramenta a um cliente novo.
 - Todo commit liberado para push segue [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:` etc.).

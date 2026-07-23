@@ -1,8 +1,12 @@
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmployeesTable, EmployeeRow } from "@/components/employees/EmployeesTable";
 import { getCommissionResults, getEmployees } from "@/lib/api";
+import { getServerLocale } from "@/lib/i18n/getServerLocale";
+import { dictionaries } from "@/lib/i18n/dictionaries";
 
 export default async function EmployeesPage() {
+  const locale = await getServerLocale();
+  const dict = dictionaries[locale];
   const [employees, commissionResults] = await Promise.all([getEmployees(), getCommissionResults()]);
 
   const periods = Array.from(new Set(commissionResults.map((r) => r.period))).sort();
@@ -15,7 +19,7 @@ export default async function EmployeesPage() {
 
   return (
     <div className="flex flex-col gap-6 pb-10">
-      <PageHeader title="Employee Management" />
+      <PageHeader title={dict.employees.title} />
       <div className="px-8">
         <EmployeesTable employees={rows} />
       </div>

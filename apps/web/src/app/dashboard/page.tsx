@@ -6,9 +6,13 @@ import { CommissionGrowthChart } from "@/components/dashboard/CommissionGrowthCh
 import { TopPerformers } from "@/components/dashboard/TopPerformers";
 import { getCommissionResults, getEmployees } from "@/lib/api";
 import { formatCurrency, formatPeriodLabel } from "@/lib/format";
+import { getServerLocale } from "@/lib/i18n/getServerLocale";
+import { dictionaries } from "@/lib/i18n/dictionaries";
 import { CommissionResult } from "@/types/domain";
 
 export default async function DashboardPage() {
+  const locale = await getServerLocale();
+  const dict = dictionaries[locale];
   const [employees, commissionResults] = await Promise.all([getEmployees(), getCommissionResults()]);
 
   const employeeName = (employeeId: string) => employees.find((e) => e.id === employeeId)?.name ?? employeeId;
@@ -22,7 +26,7 @@ export default async function DashboardPage() {
 
   const growthData = periods.map((period) => ({
     period,
-    label: formatPeriodLabel(period),
+    label: formatPeriodLabel(period, locale),
     total: commissionResults.filter((r) => r.period === period).reduce((sum, r) => sum + r.commissionAmount, 0),
   }));
 
@@ -41,35 +45,43 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6 pb-10">
-      <PageHeader title="Dashboard" />
+      <PageHeader title={dict.dashboard.title} />
 
       <div className="grid grid-cols-1 gap-4 px-8 md:grid-cols-3">
-        <KpiCard label="Total Commissions Paid" value={formatCurrency(totalPaid)} badge="+ Positive" />
         <KpiCard
-          label="Latest Period"
-          value={latestPeriod ? formatPeriodLabel(latestPeriod) : "—"}
-          hint="Último período calculado pelo motor de comissão"
+          label={dict.dashboard.totalCommissionsPaid}
+          value={formatCurrency(totalPaid, locale)}
+          badge={dict.common.positive}
         />
-        <TopPerformers performers={topPerformers} />
+        <KpiCard
+          label={dict.dashboard.latestPeriod}
+          value={latestPeriod ? formatPeriodLabel(latestPeriod, locale) : dict.common.notFound}
+          hint={dict.dashboard.latestPeriodHint}
+        />
+        <TopPerformers performers={topPerformers} dict={dict} locale={locale} />
       </div>
 
       <div className="px-8">
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-          <h2 className="mb-4 text-sm font-medium text-slate-300">Commission Growth</h2>
+          <h2 className="mb-4 text-sm font-medium text-slate-300">{dict.dashboard.commissionGrowth}</h2>
           <CommissionGrowthChart data={growthData} />
         </div>
       </div>
 
       <div className="px-8">
-        <h2 className="mb-3 text-sm font-medium text-slate-300">Recent Commission Payments</h2>
+        <h2 className="mb-3 text-sm font-medium text-slate-300">{dict.dashboard.recentPayments}</h2>
         <DataTable<CommissionResult>
           rowKey={(row) => `${row.employeeId}_${row.period}`}
           data={recentPayments}
+          emptyMessage={dict.common.noRecords}
           columns={[
-            { header: "Period", cell: (row) => formatPeriodLabel(row.period) },
-            { header: "Employee", cell: (row) => employeeName(row.employeeId) },
-            { header: "Commission", cell: (row) => formatCurrency(row.commissionAmount) },
-            { header: "Status", cell: (row) => <StatusBadge status={row.status} /> },
+            { header: dict.dashboard.tablePeriod, cell: (row) => formatPeriodLabel(row.period, locale) },
+            { header: dict.dashboard.tableEmployee, cell: (row) => employeeName(row.employeeId) },
+            { header: dict.dashboard.tableCommission, cell: (row) => formatCurrency(row.commissionAmount, locale) },
+            {
+              header: dict.dashboard.tableStatus,
+              cell: (row) => <StatusBadge status={row.status} label={dict.status[row.status]} />,
+            },
           ]}
         />
       </div>

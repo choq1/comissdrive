@@ -2,6 +2,7 @@
 
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatCurrency } from "@/lib/format";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface GrowthPoint {
   period: string;
@@ -10,6 +11,8 @@ interface GrowthPoint {
 }
 
 export function CommissionGrowthChart({ data }: { data: GrowthPoint[] }) {
+  const { locale, dict } = useLanguage();
+
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -22,11 +25,18 @@ export function CommissionGrowthChart({ data }: { data: GrowthPoint[] }) {
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
           <XAxis dataKey="label" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-          <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} width={70} tickFormatter={(v) => formatCurrency(Number(v))} />
+          <YAxis
+            stroke="#64748b"
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+            width={70}
+            tickFormatter={(v) => formatCurrency(Number(v), locale)}
+          />
           <Tooltip
             contentStyle={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8 }}
             labelStyle={{ color: "#e2e8f0" }}
-            formatter={(value: number) => [formatCurrency(value), "Comissão"]}
+            formatter={(value: number) => [formatCurrency(value, locale), dict.charts.commissionLabel]}
           />
           <Area type="monotone" dataKey="total" stroke="#22d3ee" strokeWidth={2} fill="url(#commissionGrowth)" />
         </AreaChart>

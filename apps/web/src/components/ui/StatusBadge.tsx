@@ -6,11 +6,9 @@ const STYLES: Record<string, string> = {
   inactive: "bg-slate-500/10 text-slate-400",
 };
 
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({ status, label }: { status: string; label: string }) {
   const style = STYLES[status] ?? "bg-slate-500/10 text-slate-400";
   return (
-    <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium capitalize ${style}`}>
-      {status}
-    </span>
+    <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium capitalize ${style}`}>{label}</span>
   );
 }

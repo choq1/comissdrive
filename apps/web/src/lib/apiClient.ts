@@ -1,4 +1,4 @@
-import { CommissionRule, CommissionTier, User } from "@/types/domain";
+import { CommissionRule, CommissionTier, Employee, User } from "@/types/domain";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
 
@@ -53,6 +53,18 @@ export function updateUser(id: string, patch: Partial<Omit<User, "id">> & { pass
 
 export function deleteUser(id: string) {
   return apiFetchClient<void>(`/api/users/${id}`, { method: "DELETE" });
+}
+
+export function createEmployee(input: Omit<Employee, "id">) {
+  return apiFetchClient<Employee>("/api/employees", { method: "POST", body: JSON.stringify(input) });
+}
+
+export function updateEmployee(id: string, patch: Partial<Omit<Employee, "id">>) {
+  return apiFetchClient<Employee>(`/api/employees/${id}`, { method: "PUT", body: JSON.stringify(patch) });
+}
+
+export function deleteEmployee(id: string) {
+  return apiFetchClient<void>(`/api/employees/${id}`, { method: "DELETE" });
 }
 
 export function login(email: string, password: string) {

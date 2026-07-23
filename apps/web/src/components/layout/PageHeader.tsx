@@ -1,6 +1,11 @@
+"use client";
+
 import { Bell, Inbox } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function PageHeader({ title }: { title: string }) {
+  const { dict } = useLanguage();
+
   return (
     <header className="flex items-center justify-between px-8 pb-6 pt-8">
       <h1 className="text-2xl font-semibold text-slate-50">{title}</h1>
@@ -16,8 +21,8 @@ export function PageHeader({ title }: { title: string }) {
         <div className="flex items-center gap-2 pl-2">
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-cyan-400 to-indigo-500" />
           <div className="text-sm leading-tight">
-            <div className="font-medium text-slate-100">Admin</div>
-            <div className="text-xs text-slate-500">Fictional data</div>
+            <div className="font-medium text-slate-100">{dict.pageHeader.admin}</div>
+            <div className="text-xs text-slate-500">{dict.pageHeader.fictionalData}</div>
           </div>
         </div>
       </div>

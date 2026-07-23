@@ -4,20 +4,23 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutGrid, Users, DollarSign, FileText, Settings, LogOut } from "lucide-react";
 import { useCurrentUser } from "@/contexts/UserContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { logout } from "@/lib/apiClient";
+import { LanguageToggle } from "./LanguageToggle";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
-  { href: "/employees", label: "Employees", icon: Users },
-  { href: "/commissions", label: "Commissions", icon: DollarSign },
-  { href: "/invoices", label: "Invoices", icon: FileText },
-  { href: "/settings", label: "Settings", icon: Settings, adminOnly: true },
+  { href: "/dashboard", key: "dashboard" as const, icon: LayoutGrid },
+  { href: "/employees", key: "employees" as const, icon: Users },
+  { href: "/commissions", key: "commissions" as const, icon: DollarSign },
+  { href: "/invoices", key: "invoices" as const, icon: FileText },
+  { href: "/settings", key: "settings" as const, icon: Settings, adminOnly: true },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const user = useCurrentUser();
+  const { dict } = useLanguage();
 
   if (pathname === "/login") return null;
 
@@ -34,7 +37,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">
-        {NAV_ITEMS.filter((item) => !item.adminOnly || user?.role === "admin").map(({ href, label, icon: Icon }) => {
+        {NAV_ITEMS.filter((item) => !item.adminOnly || user?.role === "admin").map(({ href, key, icon: Icon }) => {
           const isActive = pathname.startsWith(href);
 
           return (
@@ -48,27 +51,31 @@ export function Sidebar() {
               }`}
             >
               <Icon className="h-4 w-4" />
-              {label}
+              {dict.sidebar[key]}
             </Link>
           );
         })}
       </nav>
 
-      {user && (
-        <div className="flex items-center justify-between gap-2 border-t border-slate-800 px-2 pt-3">
-          <div className="min-w-0">
-            <div className="truncate text-sm font-medium text-slate-200">{user.name}</div>
-            <div className="truncate text-xs text-slate-500">{user.role}</div>
+      <div className="flex flex-col gap-3 border-t border-slate-800 px-2 pt-3">
+        <LanguageToggle />
+
+        {user && (
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="truncate text-sm font-medium text-slate-200">{user.name}</div>
+              <div className="truncate text-xs text-slate-500">{user.role}</div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="shrink-0 rounded-lg p-1.5 text-slate-500 hover:bg-slate-900 hover:text-slate-200"
+              title={dict.sidebar.logout}
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
-          <button
-            onClick={handleLogout}
-            className="shrink-0 rounded-lg p-1.5 text-slate-500 hover:bg-slate-900 hover:text-slate-200"
-            title="Sair"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </aside>
   );
 }

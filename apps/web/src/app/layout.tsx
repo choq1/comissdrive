@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { UserProvider } from "@/contexts/UserContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { getCurrentUser } from "@/lib/session";
+import { getServerLocale } from "@/lib/i18n/getServerLocale";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,18 +27,20 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getCurrentUser();
+  const [user, locale] = await Promise.all([getCurrentUser(), getServerLocale()]);
 
   return (
     <html
-      lang="pt-BR"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full bg-slate-950 text-slate-200">
-        <UserProvider user={user}>
-          <Sidebar />
-          <main className="flex-1 overflow-x-hidden">{children}</main>
-        </UserProvider>
+        <LanguageProvider initialLocale={locale}>
+          <UserProvider user={user}>
+            <Sidebar />
+            <main className="flex-1 overflow-x-hidden">{children}</main>
+          </UserProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

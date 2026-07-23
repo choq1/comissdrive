@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { login } from "@/lib/apiClient";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function LoginForm() {
   const router = useRouter();
+  const { dict } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +24,7 @@ export function LoginForm() {
       router.push("/dashboard");
       router.refresh();
     } catch {
-      setError("Email ou senha inválidos.");
+      setError(dict.login.invalidCredentials);
     } finally {
       setSubmitting(false);
     }
@@ -31,14 +33,14 @@ export function LoginForm() {
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
       <Input
-        label="Email"
+        label={dict.login.email}
         type="email"
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
       <Input
-        label="Senha"
+        label={dict.login.password}
         type="password"
         required
         value={password}
@@ -46,7 +48,7 @@ export function LoginForm() {
       />
       {error && <p className="text-sm text-rose-400">{error}</p>}
       <Button type="submit" disabled={submitting} className="mt-2">
-        {submitting ? "Entrando..." : "Entrar"}
+        {submitting ? dict.login.signingIn : dict.login.signIn}
       </Button>
     </form>
   );

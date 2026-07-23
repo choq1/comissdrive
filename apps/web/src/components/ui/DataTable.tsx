@@ -9,10 +9,10 @@ interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   data: T[];
   rowKey: (row: T) => string;
-  emptyMessage?: string;
+  emptyMessage: string;
 }
 
-export function DataTable<T>({ columns, data, rowKey, emptyMessage = "Nenhum registro encontrado." }: DataTableProps<T>) {
+export function DataTable<T>({ columns, data, rowKey, emptyMessage }: DataTableProps<T>) {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-800">
       <table className="w-full min-w-[640px] text-left text-sm">

@@ -8,13 +8,10 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { createRule, updateRule, deleteRule, createTier, updateTier, deleteTier } from "@/lib/apiClient";
+import { formatCurrency } from "@/lib/format";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Dictionary } from "@/lib/i18n/dictionaries";
 import { CommissionRule, CommissionRuleScope, CommissionRuleType, CommissionTier } from "@/types/domain";
-
-const TYPE_LABELS: Record<CommissionRuleType, string> = {
-  base: "Base Rule",
-  volumeBonus: "Volume Bonus",
-  tiered: "Tiered Structure",
-};
 
 interface RuleFormState {
   name: string;
@@ -54,9 +51,16 @@ function tierToForm(tier?: CommissionTier): TierFormState {
 
 export function RulesEditor({ rules, tiers }: { rules: CommissionRule[]; tiers: CommissionTier[] }) {
   const router = useRouter();
+  const { locale, dict } = useLanguage();
   const [ruleModal, setRuleModal] = useState<{ rule?: CommissionRule } | null>(null);
   const [tierModal, setTierModal] = useState<{ ruleId: string; tier?: CommissionTier } | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const typeLabels: Record<CommissionRuleType, string> = {
+    base: dict.settings.rules.typeBase,
+    volumeBonus: dict.settings.rules.typeVolumeBonus,
+    tiered: dict.settings.rules.typeTiered,
+  };
 
   async function submitRule(form: RuleFormState, existing?: CommissionRule) {
     setSaving(true);
@@ -126,28 +130,29 @@ export function RulesEditor({ rules, tiers }: { rules: CommissionRule[]; tiers: 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-slate-800 bg-slate-900/60 p-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-slate-100">Commission Rules Editor</h2>
+        <h2 className="text-base font-semibold text-slate-100">{dict.settings.rules.heading}</h2>
         <Button variant="ghost" onClick={() => setRuleModal({})}>
           <span className="flex items-center gap-1.5">
-            <Plus className="h-4 w-4" /> Add new rule
+            <Plus className="h-4 w-4" /> {dict.settings.rules.addNewRule}
           </span>
         </Button>
       </div>
 
       <div className="flex flex-col gap-3">
-        {rules.length === 0 && <p className="text-sm text-slate-500">No commission rules configured yet.</p>}
+        {rules.length === 0 && <p className="text-sm text-slate-500">{dict.settings.rules.empty}</p>}
 
         {rules.map((rule) => (
           <div key={rule.id} className="rounded-lg border border-slate-800 p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <span className="text-xs font-medium uppercase tracking-wide text-cyan-400">
-                  {TYPE_LABELS[rule.type]}
+                  {typeLabels[rule.type]}
                 </span>
                 <p className="text-sm font-medium text-slate-100">{rule.name}</p>
                 <p className="text-xs text-slate-500">
-                  {rule.scope === "global" ? "Applies globally" : `${rule.scope}: ${rule.appliesTo}`} · {rule.percentage}%
-                  {rule.threshold != null && ` above $${rule.threshold.toLocaleString()}`}
+                  {rule.scope === "global" ? dict.settings.rules.appliesGlobally : `${rule.scope}: ${rule.appliesTo}`} ·{" "}
+                  {rule.percentage}%
+                  {rule.threshold != null && ` ${dict.settings.rules.above} ${formatCurrency(rule.threshold, locale)}`}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
@@ -174,7 +179,8 @@ export function RulesEditor({ rules, tiers }: { rules: CommissionRule[]; tiers: 
                   .map((tier) => (
                     <div key={tier.id} className="flex items-center justify-between rounded-lg bg-slate-950/50 px-3 py-2 text-sm">
                       <span className="text-slate-300">
-                        {tier.tierName}: ${tier.minRevenue.toLocaleString()} – {tier.maxRevenue != null ? `$${tier.maxRevenue.toLocaleString()}` : "∞"} → {tier.percentage}%
+                        {tier.tierName}: {formatCurrency(tier.minRevenue, locale)} –{" "}
+                        {tier.maxRevenue != null ? formatCurrency(tier.maxRevenue, locale) : "∞"} → {tier.percentage}%
                       </span>
                       <div className="flex items-center gap-1">
                         <button
@@ -197,7 +203,7 @@ export function RulesEditor({ rules, tiers }: { rules: CommissionRule[]; tiers: 
                   onClick={() => setTierModal({ ruleId: rule.id })}
                   className="self-start text-xs font-medium text-cyan-400 hover:text-cyan-300"
                 >
-                  + Add tier
+                  {dict.settings.rules.addTier}
                 </button>
               </div>
             )}
@@ -209,6 +215,7 @@ export function RulesEditor({ rules, tiers }: { rules: CommissionRule[]; tiers: 
         <RuleFormModal
           existing={ruleModal.rule}
           saving={saving}
+          dict={dict}
           onClose={() => setRuleModal(null)}
           onSubmit={(form) => submitRule(form, ruleModal.rule)}
         />
@@ -218,6 +225,7 @@ export function RulesEditor({ rules, tiers }: { rules: CommissionRule[]; tiers: 
         <TierFormModal
           existing={tierModal.tier}
           saving={saving}
+          dict={dict}
           onClose={() => setTierModal(null)}
           onSubmit={(form) => submitTier(form, tierModal.ruleId, tierModal.tier)}
         />
@@ -229,18 +237,21 @@ export function RulesEditor({ rules, tiers }: { rules: CommissionRule[]; tiers: 
 function RuleFormModal({
   existing,
   saving,
+  dict,
   onClose,
   onSubmit,
 }: {
   existing?: CommissionRule;
   saving: boolean;
+  dict: Dictionary;
   onClose: () => void;
   onSubmit: (form: RuleFormState) => void;
 }) {
   const [form, setForm] = useState<RuleFormState>(ruleToForm(existing));
+  const r = dict.settings.rules;
 
   return (
-    <Modal title={existing ? "Edit rule" : "Add new rule"} onClose={onClose}>
+    <Modal title={existing ? r.editRuleTitle : r.addRuleTitle} onClose={onClose}>
       <form
         className="flex flex-col gap-3"
         onSubmit={(e) => {
@@ -249,41 +260,41 @@ function RuleFormModal({
         }}
       >
         <Input
-          label="Name"
+          label={r.name}
           required
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
         />
         <Select
-          label="Type"
+          label={r.type}
           value={form.type}
           onChange={(e) => setForm({ ...form, type: e.target.value as CommissionRuleType })}
           options={[
-            { value: "base", label: "Base Rule" },
-            { value: "volumeBonus", label: "Volume Bonus" },
-            { value: "tiered", label: "Tiered Structure" },
+            { value: "base", label: r.typeBase },
+            { value: "volumeBonus", label: r.typeVolumeBonus },
+            { value: "tiered", label: r.typeTiered },
           ]}
         />
         <Select
-          label="Scope"
+          label={r.scope}
           value={form.scope}
           onChange={(e) => setForm({ ...form, scope: e.target.value as CommissionRuleScope })}
           options={[
-            { value: "department", label: "Department" },
-            { value: "role", label: "Role" },
-            { value: "global", label: "Global" },
+            { value: "department", label: r.department },
+            { value: "role", label: r.role },
+            { value: "global", label: r.global },
           ]}
         />
         {form.scope !== "global" && (
           <Input
-            label={form.scope === "department" ? "Department" : "Role"}
+            label={form.scope === "department" ? r.department : r.role}
             required
             value={form.appliesTo}
             onChange={(e) => setForm({ ...form, appliesTo: e.target.value })}
           />
         )}
         <Input
-          label="Percentage (%)"
+          label={r.percentage}
           type="number"
           step="0.1"
           min="0"
@@ -293,7 +304,7 @@ function RuleFormModal({
         />
         {form.type === "volumeBonus" && (
           <Input
-            label="Threshold ($)"
+            label={r.threshold}
             type="number"
             min="0"
             value={form.threshold}
@@ -302,10 +313,10 @@ function RuleFormModal({
         )}
         <div className="mt-2 flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
+            {dict.common.cancel}
           </Button>
           <Button type="submit" disabled={saving}>
-            {existing ? "Save changes" : "Create rule"}
+            {existing ? r.saveChanges : r.createRule}
           </Button>
         </div>
       </form>
@@ -316,18 +327,21 @@ function RuleFormModal({
 function TierFormModal({
   existing,
   saving,
+  dict,
   onClose,
   onSubmit,
 }: {
   existing?: CommissionTier;
   saving: boolean;
+  dict: Dictionary;
   onClose: () => void;
   onSubmit: (form: TierFormState) => void;
 }) {
   const [form, setForm] = useState<TierFormState>(tierToForm(existing));
+  const r = dict.settings.rules;
 
   return (
-    <Modal title={existing ? "Edit tier" : "Add tier"} onClose={onClose}>
+    <Modal title={existing ? r.editTierTitle : r.addTierTitleModal} onClose={onClose}>
       <form
         className="flex flex-col gap-3"
         onSubmit={(e) => {
@@ -336,13 +350,13 @@ function TierFormModal({
         }}
       >
         <Input
-          label="Tier name"
+          label={r.tierName}
           required
           value={form.tierName}
           onChange={(e) => setForm({ ...form, tierName: e.target.value })}
         />
         <Input
-          label="Min revenue ($)"
+          label={r.minRevenue}
           type="number"
           min="0"
           required
@@ -350,14 +364,14 @@ function TierFormModal({
           onChange={(e) => setForm({ ...form, minRevenue: e.target.value })}
         />
         <Input
-          label="Max revenue ($, empty = no limit)"
+          label={r.maxRevenue}
           type="number"
           min="0"
           value={form.maxRevenue}
           onChange={(e) => setForm({ ...form, maxRevenue: e.target.value })}
         />
         <Input
-          label="Percentage (%)"
+          label={r.percentage}
           type="number"
           step="0.1"
           min="0"
@@ -367,10 +381,10 @@ function TierFormModal({
         />
         <div className="mt-2 flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
+            {dict.common.cancel}
           </Button>
           <Button type="submit" disabled={saving}>
-            {existing ? "Save changes" : "Add tier"}
+            {existing ? r.saveChanges : r.addTierBtn}
           </Button>
         </div>
       </form>

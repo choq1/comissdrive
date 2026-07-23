@@ -9,12 +9,9 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { createUser, deleteUser, updateUser } from "@/lib/apiClient";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Dictionary } from "@/lib/i18n/dictionaries";
 import { Employee, User, UserRole } from "@/types/domain";
-
-const ROLE_OPTIONS = [
-  { value: "admin", label: "Admin" },
-  { value: "manager", label: "Manager" },
-];
 
 interface UserFormState {
   name: string;
@@ -26,8 +23,14 @@ interface UserFormState {
 
 export function UserPermissionsPanel({ users, employees }: { users: User[]; employees: Employee[] }) {
   const router = useRouter();
+  const { dict } = useLanguage();
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const roleOptions = [
+    { value: "admin", label: dict.settings.users.admin },
+    { value: "manager", label: dict.settings.users.manager },
+  ];
 
   async function changeRole(user: User, role: UserRole) {
     setSaving(true);
@@ -69,10 +72,10 @@ export function UserPermissionsPanel({ users, employees }: { users: User[]; empl
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-slate-800 bg-slate-900/60 p-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-slate-100">User Permissions</h2>
+        <h2 className="text-base font-semibold text-slate-100">{dict.settings.users.heading}</h2>
         <Button variant="ghost" onClick={() => setCreating(true)}>
           <span className="flex items-center gap-1.5">
-            <Plus className="h-4 w-4" /> Add user
+            <Plus className="h-4 w-4" /> {dict.settings.users.addUser}
           </span>
         </Button>
       </div>
@@ -80,10 +83,10 @@ export function UserPermissionsPanel({ users, employees }: { users: User[]; empl
       <DataTable<User>
         rowKey={(row) => row.id}
         data={users}
-        emptyMessage="No users configured yet."
+        emptyMessage={dict.settings.users.empty}
         columns={[
           {
-            header: "Name",
+            header: dict.settings.users.name,
             cell: (row) => (
               <div>
                 <div className="font-medium text-slate-100">{row.name}</div>
@@ -92,13 +95,13 @@ export function UserPermissionsPanel({ users, employees }: { users: User[]; empl
             ),
           },
           {
-            header: "Role",
+            header: dict.settings.users.role,
             cell: (row) => (
               <Select
                 value={row.role}
                 disabled={saving}
                 onChange={(e) => changeRole(row, e.target.value as UserRole)}
-                options={ROLE_OPTIONS}
+                options={roleOptions}
                 className="py-1.5"
               />
             ),
@@ -119,7 +122,14 @@ export function UserPermissionsPanel({ users, employees }: { users: User[]; empl
       />
 
       {creating && (
-        <UserFormModal employees={employees} saving={saving} onClose={() => setCreating(false)} onSubmit={submitNewUser} />
+        <UserFormModal
+          employees={employees}
+          saving={saving}
+          dict={dict}
+          roleOptions={roleOptions}
+          onClose={() => setCreating(false)}
+          onSubmit={submitNewUser}
+        />
       )}
     </div>
   );
@@ -128,11 +138,15 @@ export function UserPermissionsPanel({ users, employees }: { users: User[]; empl
 function UserFormModal({
   employees,
   saving,
+  dict,
+  roleOptions,
   onClose,
   onSubmit,
 }: {
   employees: Employee[];
   saving: boolean;
+  dict: Dictionary;
+  roleOptions: { value: string; label: string }[];
   onClose: () => void;
   onSubmit: (form: UserFormState) => void;
 }) {
@@ -143,9 +157,10 @@ function UserFormModal({
     employeeId: "",
     password: "",
   });
+  const u = dict.settings.users;
 
   return (
-    <Modal title="Add user" onClose={onClose}>
+    <Modal title={u.addUserTitle} onClose={onClose}>
       <form
         className="flex flex-col gap-3"
         onSubmit={(e) => {
@@ -153,16 +168,16 @@ function UserFormModal({
           onSubmit(form);
         }}
       >
-        <Input label="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <Input label={u.name} required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <Input
-          label="Email"
+          label={u.email}
           type="email"
           required
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
         />
         <Input
-          label="Password"
+          label={u.password}
           type="password"
           required
           minLength={8}
@@ -170,23 +185,23 @@ function UserFormModal({
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
         <Select
-          label="Role"
+          label={u.role}
           value={form.role}
           onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })}
-          options={ROLE_OPTIONS}
+          options={roleOptions}
         />
         <Select
-          label="Linked employee (optional)"
+          label={u.linkedEmployee}
           value={form.employeeId}
           onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
-          options={[{ value: "", label: "None" }, ...employees.map((emp) => ({ value: emp.id, label: emp.name }))]}
+          options={[{ value: "", label: u.none }, ...employees.map((emp) => ({ value: emp.id, label: emp.name }))]}
         />
         <div className="mt-2 flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
+            {dict.common.cancel}
           </Button>
           <Button type="submit" disabled={saving}>
-            Add user
+            {u.addUserBtn}
           </Button>
         </div>
       </form>
