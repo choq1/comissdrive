@@ -139,7 +139,7 @@ export function RulesEditor({ rules, tiers }: { rules: CommissionRule[]; tiers: 
       </div>
 
       <div className="flex flex-col gap-3">
-        {rules.length === 0 && <p className="text-sm text-slate-500">{dict.settings.rules.empty}</p>}
+        {rules.length === 0 && <p className="text-sm text-slate-400">{dict.settings.rules.empty}</p>}
 
         {rules.map((rule) => (
           <div key={rule.id} className="rounded-lg border border-slate-800 p-4">
@@ -149,7 +149,7 @@ export function RulesEditor({ rules, tiers }: { rules: CommissionRule[]; tiers: 
                   {typeLabels[rule.type]}
                 </span>
                 <p className="text-sm font-medium text-slate-100">{rule.name}</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   {rule.scope === "global" ? dict.settings.rules.appliesGlobally : `${rule.scope}: ${rule.appliesTo}`} ·{" "}
                   {rule.percentage}%
                   {rule.threshold != null && ` ${dict.settings.rules.above} ${formatCurrency(rule.threshold, locale)}`}
@@ -158,16 +158,18 @@ export function RulesEditor({ rules, tiers }: { rules: CommissionRule[]; tiers: 
               <div className="flex shrink-0 items-center gap-1">
                 <button
                   onClick={() => setRuleModal({ rule })}
+                  aria-label={dict.settings.rules.editRuleTitle}
                   className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-800 hover:text-slate-200"
                 >
-                  <Pencil className="h-3.5 w-3.5" />
+                  <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
                 <button
                   onClick={() => removeRule(rule.id)}
                   disabled={saving}
+                  aria-label={dict.settings.rules.deleteRuleAria}
                   className="rounded-lg p-1.5 text-slate-500 hover:bg-rose-500/10 hover:text-rose-400"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -185,16 +187,18 @@ export function RulesEditor({ rules, tiers }: { rules: CommissionRule[]; tiers: 
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => setTierModal({ ruleId: rule.id, tier })}
+                          aria-label={dict.settings.rules.editTierTitle}
                           className="rounded-lg p-1 text-slate-500 hover:bg-slate-800 hover:text-slate-200"
                         >
-                          <Pencil className="h-3 w-3" />
+                          <Pencil className="h-3 w-3" aria-hidden="true" />
                         </button>
                         <button
                           onClick={() => removeTier(tier.id)}
                           disabled={saving}
+                          aria-label={dict.settings.rules.deleteTierAria}
                           className="rounded-lg p-1 text-slate-500 hover:bg-rose-500/10 hover:text-rose-400"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-3 w-3" aria-hidden="true" />
                         </button>
                       </div>
                     </div>

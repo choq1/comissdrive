@@ -105,12 +105,13 @@ export function EmployeesTable({ employees }: { employees: EmployeeRow[] }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2">
-            <Search className="h-4 w-4 text-slate-500" />
+            <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={dict.employees.search}
-              className="w-56 bg-transparent text-sm text-slate-200 outline-none placeholder:text-slate-500"
+              aria-label={dict.employees.search}
+              className="w-56 bg-transparent text-sm text-slate-200 outline-none placeholder:text-slate-400"
             />
           </div>
 
@@ -147,7 +148,7 @@ export function EmployeesTable({ employees }: { employees: EmployeeRow[] }) {
             cell: (row) => (
               <div>
                 <div className="font-medium text-slate-100">{row.name}</div>
-                <div className="text-xs text-slate-500">{row.code}</div>
+                <div className="text-xs text-slate-400">{row.code}</div>
               </div>
             ),
           },
@@ -171,16 +172,18 @@ export function EmployeesTable({ employees }: { employees: EmployeeRow[] }) {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => setFormModal({ employee: row })}
+                        aria-label={dict.employees.editEmployeeTitle}
                         className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-800 hover:text-slate-200"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                       <button
                         onClick={() => removeEmployee(row.id)}
                         disabled={saving}
+                        aria-label={dict.employees.deleteEmployeeAria}
                         className="rounded-lg p-1.5 text-slate-500 hover:bg-rose-500/10 hover:text-rose-400"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                     </div>
                   ),

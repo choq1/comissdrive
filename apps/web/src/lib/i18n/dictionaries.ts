@@ -9,6 +9,7 @@ export interface Dictionary {
     noRecords: string;
     cancel: string;
     saveChanges: string;
+    close: string;
   };
   sidebar: {
     dashboard: string;
@@ -19,8 +20,12 @@ export interface Dictionary {
     logout: string;
   };
   pageHeader: {
-    admin: string;
     fictionalData: string;
+    inbox: string;
+    inboxEmpty: string;
+    notifications: string;
+    notificationsEmpty: string;
+    accountMenu: string;
   };
   charts: {
     commissionLabel: string;
@@ -66,6 +71,7 @@ export interface Dictionary {
     tierGold: string;
     tierSilver: string;
     createEmployee: string;
+    deleteEmployeeAria: string;
   };
   commissions: {
     title: string;
@@ -120,6 +126,8 @@ export interface Dictionary {
       saveChanges: string;
       createRule: string;
       addTierBtn: string;
+      deleteRuleAria: string;
+      deleteTierAria: string;
     };
     users: {
       heading: string;
@@ -135,6 +143,7 @@ export interface Dictionary {
       linkedEmployee: string;
       none: string;
       addUserBtn: string;
+      deleteUserAria: string;
     };
   };
   login: {
@@ -154,6 +163,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       noRecords: "Nenhum registro encontrado.",
       cancel: "Cancelar",
       saveChanges: "Salvar alterações",
+      close: "Fechar",
     },
     sidebar: {
       dashboard: "Dashboard",
@@ -164,8 +174,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       logout: "Sair",
     },
     pageHeader: {
-      admin: "Admin",
       fictionalData: "Dados fictícios",
+      inbox: "Caixa de entrada",
+      inboxEmpty: "Nenhuma mensagem na caixa de entrada.",
+      notifications: "Notificações",
+      notificationsEmpty: "Não há novas notificações.",
+      accountMenu: "Menu da conta",
     },
     charts: {
       commissionLabel: "Comissão",
@@ -211,6 +225,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       tierGold: "Gold",
       tierSilver: "Silver",
       createEmployee: "Criar funcionário",
+      deleteEmployeeAria: "Excluir funcionário",
     },
     commissions: {
       title: "Relatórios de Comissão & Faturas",
@@ -265,6 +280,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         saveChanges: "Salvar alterações",
         createRule: "Criar regra",
         addTierBtn: "Adicionar faixa",
+        deleteRuleAria: "Excluir regra",
+        deleteTierAria: "Excluir faixa",
       },
       users: {
         heading: "Permissões de Usuário",
@@ -280,6 +297,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         linkedEmployee: "Funcionário vinculado (opcional)",
         none: "Nenhum",
         addUserBtn: "Adicionar usuário",
+        deleteUserAria: "Excluir usuário",
       },
     },
     login: {
@@ -297,6 +315,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       noRecords: "No records found.",
       cancel: "Cancel",
       saveChanges: "Save changes",
+      close: "Close",
     },
     sidebar: {
       dashboard: "Dashboard",
@@ -307,8 +326,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       logout: "Log out",
     },
     pageHeader: {
-      admin: "Admin",
       fictionalData: "Fictional data",
+      inbox: "Inbox",
+      inboxEmpty: "No messages in your inbox.",
+      notifications: "Notifications",
+      notificationsEmpty: "No new notifications.",
+      accountMenu: "Account menu",
     },
     charts: {
       commissionLabel: "Commission",
@@ -354,6 +377,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       tierGold: "Gold",
       tierSilver: "Silver",
       createEmployee: "Create employee",
+      deleteEmployeeAria: "Delete employee",
     },
     commissions: {
       title: "Commission Reports & Invoices",
@@ -408,6 +432,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         saveChanges: "Save changes",
         createRule: "Create rule",
         addTierBtn: "Add tier",
+        deleteRuleAria: "Delete rule",
+        deleteTierAria: "Delete tier",
       },
       users: {
         heading: "User Permissions",
@@ -423,6 +449,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         linkedEmployee: "Linked employee (optional)",
         none: "None",
         addUserBtn: "Add user",
+        deleteUserAria: "Delete user",
       },
     },
     login: {

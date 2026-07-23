@@ -20,7 +20,7 @@ export function TopPerformers({
     <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
       <h2 className="mb-4 text-sm font-medium text-slate-300">{dict.dashboard.topPerformers}</h2>
       <ul className="flex flex-col gap-4">
-        {performers.length === 0 && <li className="text-sm text-slate-500">{dict.dashboard.noDataForPeriod}</li>}
+        {performers.length === 0 && <li className="text-sm text-slate-400">{dict.dashboard.noDataForPeriod}</li>}
         {performers.map((performer, index) => (
           <li key={performer.employeeId} className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -29,7 +29,7 @@ export function TopPerformers({
               </div>
               <div className="text-sm">
                 <div className="font-medium text-slate-100">{performer.name}</div>
-                <div className="text-xs text-slate-500">{dict.pageHeader.fictionalData}</div>
+                <div className="text-xs text-slate-400">{dict.pageHeader.fictionalData}</div>
               </div>
             </div>
             <span className="text-sm font-medium text-slate-200">

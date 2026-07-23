@@ -20,7 +20,7 @@ export function KpiCard({ label, value, badge, hint, children }: KpiCardProps) {
         )}
       </div>
       <span className="text-2xl font-semibold text-slate-50">{value}</span>
-      {hint && <span className="text-xs text-slate-500">{hint}</span>}
+      {hint && <span className="text-xs text-slate-400">{hint}</span>}
       {children}
     </div>
   );

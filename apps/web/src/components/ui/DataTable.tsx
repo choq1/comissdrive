@@ -28,7 +28,7 @@ export function DataTable<T>({ columns, data, rowKey, emptyMessage }: DataTableP
         <tbody>
           {data.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-4 py-8 text-center text-slate-500">
+              <td colSpan={columns.length} className="px-4 py-8 text-center text-slate-400">
                 {emptyMessage}
               </td>
             </tr>
