@@ -11,7 +11,7 @@ Dois papéis de acesso, na mesma aplicação (controlados por `role`):
 - **Admin**: cadastra métricas (funcionários, faturamento) e define as regras de cálculo de comissão. Acessa também permissões de usuário e integrações (Salesforce, Stripe, Slack).
 - **Manager / Gestão**: acompanha dashboards, funcionários, comissões e invoices geradas a partir das regras definidas pelo admin.
 
-Referência visual (pasta raiz do projeto): `dashboard.png`, `analytics.png`, `Gestão.png`, `configurações globais.png` — app "Commissioning", dark-theme, sidebar com Dashboard / Employees / Commissions / Invoices / Settings.
+Referência visual (pasta raiz do projeto): `dashboard.png`, `analytics.png`, `Gestão.png`, `configurações globais.png` — app "ComissPro", dark-theme, sidebar com Dashboard / Employees / Commissions / Invoices / Settings. Identidade visual (favicon + logos em 3 tamanhos, PNG+SVG) em `img/` — ver `guia/01-nome-e-marca.md`.
 
 ## Localização do projeto
 
@@ -42,7 +42,8 @@ Projeto Piloto/
 │   ├── 06-autenticacao-permissoes.md
 │   ├── 07-migracao-postgresql-prisma.md
 │   ├── 08-internacionalizacao-pt-br-en.md
-│   └── 09-crud-employees-frontend.md
+│   ├── 09-crud-employees-frontend.md
+│   └── 10-rebrand-comisspro.md
 ├── guia/                      # manual operacional vivo — como adaptar/manter a ferramenta para um cliente (nome/marca, idioma, dados, usuários, env). Ver guia/README.md
 ├── package.json                # root, npm workspaces
 ├── .husky/                     # hooks de git (pre-commit, pre-push) — ativos
@@ -50,10 +51,11 @@ Projeto Piloto/
 ├── .env.example
 └── apps/
     ├── web/                    # Next.js + Tailwind — frontend (admin + gestão)
+    │   ├── public/brand/       # SVGs da identidade visual (logo-small/medium/large, favicon) — mesmos nomes de arquivo, trocar para rebrandear (fase 10)
     │   └── src/
     │       ├── app/            # rotas: /dashboard, /employees, /commissions, /invoices, /settings
     │       ├── components/
-    │       │   ├── layout/     # Sidebar, PageHeader, LanguageToggle (fase 8)
+    │       │   ├── layout/     # Sidebar, PageHeader, LanguageToggle (fase 8), BrandLogo (fase 10 — renderiza branding.ts)
     │       │   ├── ui/         # KpiCard, StatusBadge, DataTable, Modal, Input, Select, Button (genéricos)
     │       │   ├── dashboard/  # CommissionGrowthChart, TopPerformers
     │       │   ├── employees/  # EmployeesTable — CRUD completo (busca, filtro, criar/editar/excluir funcionário, admin-only) desde a fase 9
@@ -61,6 +63,7 @@ Projeto Piloto/
     │       │   └── settings/   # RulesEditor (rules + tiers), UserPermissionsPanel — "use client", primeiros CRUDs client-side do app
     │       ├── contexts/       # UserContext (usuário logado), LanguageContext (idioma ativo + dicionário, fase 8)
     │       ├── lib/
+    │       │   ├── branding.ts # nome, descrição, domínio e paths dos logos — fonte única de verdade da marca (fase 10). Ver guia/01-nome-e-marca.md
     │       │   ├── i18n/       # dictionaries.ts (strings PT-BR/EN), getServerLocale.ts (lê cookie `locale` em Server Components) — fase 8
     │       │   ├── api.ts      # fetch tipado por entidade (Server Components), cache: "no-store"
     │       │   ├── apiClient.ts# mutações POST/PUT/DELETE (Client Components, credentials:"include")
@@ -161,9 +164,9 @@ Validação de payload via `zod` (`src/schemas/`), erros padronizados em `{ erro
 - **Frontend**: `apps/web/src/proxy.ts` — **nesta versão do Next.js (16.2.10), o arquivo de middleware foi renomeado de `middleware.ts` para `proxy.ts`** (função exportada `proxy`, não `middleware`; ver `node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md`). Roda em runtime Node.js por padrão, então usa `jsonwebtoken.verify` direto (mesma lib do backend). Sem sessão válida → redirect para `/login`; role `manager` em `/settings` → redirect para `/dashboard` (reforçado de novo em `settings/page.tsx`, defesa em profundidade).
 - `lib/api.ts` (server-only, repassa o cookie via `next/headers` `cookies()`) ficou só com as funções de leitura usadas por Server Components. As mutações (rules/tiers/users) e `login`/`logout` moraram para `lib/apiClient.ts` (`credentials: "include"`) — separação necessária porque um módulo que importa `next/headers` quebra ao ser bundlado para o client.
 - `contexts/UserContext.tsx` expõe o usuário logado (buscado uma vez em `layout.tsx` via `lib/session.ts`) para Client Components — usado pela `Sidebar` para esconder "Settings" de managers e mostrar o botão de logout.
-- **Seed de senha**: `apps/api/src/scripts/seedPasswords.ts` (`npm run seed:passwords --workspace=apps/api`) define a senha padrão `mudar123` para os usuários fictícios existentes (`admin@commissioning.local`, `manager@commissioning.local`) — ambiente de teste, não usar em produção.
+- **Seed de senha**: `apps/api/src/scripts/seedPasswords.ts` (`npm run seed:passwords --workspace=apps/api`) define a senha padrão `mudar123` para os usuários fictícios existentes (`admin@comisspro.com.br`, `manager@comisspro.com.br`) — ambiente de teste, não usar em produção.
 
-## Frontend (fases 4-5, 8-9)
+## Frontend (fases 4-5, 8-10)
 
 - **Next.js 16.2.10 + React 19.2.4** — versão com breaking changes relevantes em relação ao Next.js "clássico" (ver `apps/web/AGENTS.md`, que manda checar `node_modules/next/dist/docs/` antes de mexer no App Router). O que já mudou e foi levado em conta: `params`/`searchParams` de página são `Promise` (nenhuma tela usa ainda, mas vale lembrar nas próximas); `fetch` em Server Components não é cacheado automaticamente nessa versão — por isso `lib/api.ts` usa `cache: "no-store"` explicitamente em toda chamada, garantindo dado sempre fresco independente do modelo de cache ativo no projeto.
 - **Padrão de leitura**: cada `app/*/page.tsx` é Server Component, busca direto da API Express via `lib/api.ts` e passa os dados como props para Client Components (`"use client"`) que cuidam de interatividade local (busca/filtro em `EmployeesTable`, gráficos Recharts).
@@ -171,6 +174,7 @@ Validação de payload via `zod` (`src/schemas/`), erros padronizados em `{ erro
 - **Telas**: `/login` (form email/senha, fase 6), `/dashboard` (KPIs, gráfico de tendência de comissão, top performers, pagamentos recentes), `/employees` (tabela com busca/filtro por department + CRUD completo admin-only desde a fase 9), `/commissions` (KPIs de analytics, gráfico de barras top 5, gráfico de pizza por department, invoices recentes), `/invoices` (tabela simples), `/settings` (editor de `CommissionRule`/`CommissionTier` + painel de `User` — admin-only, com enforcement real desde a fase 6: `proxy.ts` redireciona managers e a própria page reforça o guard).
 - **Internacionalização (fase 8)**: PT-BR (padrão) e EN, com botão de troca na Sidebar (`LanguageToggle.tsx`). Strings de interface vivem em `lib/i18n/dictionaries.ts` (tipado por `Dictionary`); Server Components leem o idioma via cookie `locale` (`getServerLocale.ts`), Client Components via `useLanguage()` (`LanguageContext.tsx`). `formatCurrency`/`formatPeriodLabel` (`lib/format.ts`) são locale-aware. **Dados de negócio (nome/department/role cadastrados pelo admin) não são traduzidos automaticamente** — ver `guia/02-idioma-pt-br-en.md` e `guia/03-funcionarios-e-dados.md`.
 - **Dívida técnica registrada**: `apps/web/src/types/domain.ts` é uma cópia manual de `apps/api/src/types/domain.ts` (sem pacote compartilhado no monorepo ainda) — ao mudar um, replicar a mudança no outro.
+- **Branding centralizado (fase 10)**: nome, descrição, domínio e paths dos logos vêm de `lib/branding.ts` (fonte única de verdade), renderizados por `components/layout/BrandLogo.tsx` (usa `<img>` puro, não `next/image` — SVG local é bloqueado pelo otimizador de imagem por padrão). Artes em `public/brand/*.svg` e favicon via convenção nativa do App Router (`app/icon.svg` + `app/apple-icon.png`, sem `favicon.ico`). Trocar de marca para um cliente novo = sobrescrever os arquivos de `public/brand/` (mesmos nomes) + editar `branding.ts`, sem mexer em JSX — ver `guia/01-nome-e-marca.md`.
 
 ## Testes
 
@@ -198,8 +202,9 @@ Cada fase gera um plano próprio salvo em `plan/`.
 7. **`plan/07-migracao-postgresql-prisma.md`** — Migração da persistência de JSON local para PostgreSQL (Supabase) via Prisma ORM: schema Prisma espelhando `types/domain.ts`, `lib/crudRepository.ts` reescrito sobre delegates Prisma, seed a partir dos antigos `data/*.json`. ✅
 8. **`plan/08-internacionalizacao-pt-br-en.md`** — Internacionalização PT-BR/EN: dicionário de strings (`lib/i18n/dictionaries.ts`), `LanguageContext`/`LanguageToggle`, `formatCurrency`/`formatPeriodLabel` locale-aware (R$/$, sem conversão de câmbio). ✅
 9. **`plan/09-crud-employees-frontend.md`** — Tela de CRUD completo de Employee no frontend (`EmployeesTable.tsx`): botão adicionar + editar/excluir por linha, admin-only, mesmo padrão de `RulesEditor`/`UserPermissionsPanel`. Backend já tinha os endpoints prontos. ✅
-10. Deploy.
-11. **CI/CD (GitHub Actions)** — quando o repositório for para o GitHub, workflow que roda `npm test` a cada push/PR, como camada adicional aos hooks locais. O push continua exigindo aprovação humana; o CI só impede merge/deploy com testes quebrados.
+10. **`plan/10-rebrand-comisspro.md`** — Rebrand de "Commissioning" para "ComissPro": sistema de branding centralizado (`lib/branding.ts` + `BrandLogo.tsx` + `public/brand/`), favicon/app icon via convenção nativa do Next (`app/icon.svg`), domínio de e-mail dos usuários (`comisspro.com.br`). ✅
+11. Deploy.
+12. **CI/CD (GitHub Actions)** — quando o repositório for para o GitHub, workflow que roda `npm test` a cada push/PR, como camada adicional aos hooks locais. O push continua exigindo aprovação humana; o CI só impede merge/deploy com testes quebrados.
 
 ## Convenções
 

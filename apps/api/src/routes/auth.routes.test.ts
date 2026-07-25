@@ -5,7 +5,7 @@ import { authCookie } from "../test-utils/authCookie";
 
 const app = createApp();
 
-const TEST_EMAIL = "auth.test.user@commissioning.local";
+const TEST_EMAIL = "auth.test.user@comisspro.com.br";
 const TEST_PASSWORD = "test1234";
 let testUserId: string;
 
@@ -40,7 +40,7 @@ describe("Auth routes", () => {
   it("returns 401 for unknown email", async () => {
     const res = await request(app)
       .post("/api/auth/login")
-      .send({ email: "nobody@commissioning.local", password: "whatever" });
+      .send({ email: "nobody@comisspro.com.br", password: "whatever" });
     expect(res.status).toBe(401);
   });
 

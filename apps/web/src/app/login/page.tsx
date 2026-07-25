@@ -1,11 +1,16 @@
 import { LoginForm } from "@/components/auth/LoginForm";
+import { BrandLogo } from "@/components/layout/BrandLogo";
+import { branding } from "@/lib/branding";
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center px-4">
-      <div className="w-full max-w-sm rounded-xl border border-slate-800 bg-slate-900/60 p-6">
-        <div className="mb-6 flex items-center gap-2 text-lg font-semibold text-slate-50">
-          <span className="text-cyan-400">~</span> Commissioning
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-slate-950 px-4">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-500/10 blur-3xl" />
+
+      <div className="relative w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900/70 p-8 shadow-2xl shadow-black/40 backdrop-blur">
+        <div className="mb-8 flex flex-col items-center gap-2 text-center">
+          <BrandLogo size="medium" />
+          <p className="text-sm text-slate-400">{branding.description}</p>
         </div>
         <LoginForm />
       </div>

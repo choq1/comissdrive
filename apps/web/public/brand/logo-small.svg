@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 110" width="420" height="110">
+  <defs>
+    <linearGradient id="gradIcon" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="gradText" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="8" y="7" width="96" height="96" rx="21" fill="url(#gradIcon)"/>
+  <g transform="translate(24,23) scale(2.7)" fill="none" stroke="#f8fafc" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+    <polyline points="16 7 22 7 22 13"/>
+  </g>
+
+  <text x="120" y="63" dominant-baseline="middle"
+        font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif" font-weight="700" letter-spacing="-1"
+        font-size="44" fill="#f8fafc">Comiss<tspan fill="url(#gradText)">Pro</tspan></text>
+</svg>

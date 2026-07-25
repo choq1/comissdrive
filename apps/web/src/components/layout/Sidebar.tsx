@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { LayoutGrid, Users, DollarSign, FileText, Settings } from "lucide-react";
 import { useCurrentUser } from "@/contexts/UserContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 
 const NAV_ITEMS = [
   { href: "/dashboard", key: "dashboard" as const, icon: LayoutGrid },
@@ -23,8 +24,8 @@ export function Sidebar() {
 
   return (
     <aside className="flex w-64 shrink-0 flex-col gap-1 border-r border-slate-800 bg-slate-950 p-4">
-      <div className="mb-6 flex items-center gap-2 px-2 text-lg font-semibold text-slate-50">
-        <span className="text-cyan-400">~</span> Commissioning
+      <div className="mb-6 px-2">
+        <BrandLogo size="small" />
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">

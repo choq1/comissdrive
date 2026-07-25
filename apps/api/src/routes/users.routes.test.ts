@@ -7,7 +7,7 @@ const app = createApp();
 
 const newUser = {
   name: "Test User",
-  email: "test.user@commissioning.local",
+  email: "test.user@comisspro.com.br",
   role: "manager",
   password: "test1234",
 };

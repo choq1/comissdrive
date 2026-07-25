@@ -5,6 +5,7 @@ import { UserProvider } from "@/contexts/UserContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { getCurrentUser } from "@/lib/session";
 import { getServerLocale } from "@/lib/i18n/getServerLocale";
+import { branding } from "@/lib/branding";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Commissioning",
-  description: "SaaS de cálculo de comissionamento",
+  title: branding.name,
+  description: branding.description,
 };
 
 export default async function RootLayout({
