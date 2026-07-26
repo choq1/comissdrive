@@ -103,6 +103,13 @@ export function calculateCommissions(period: string) {
   });
 }
 
+export function updateCommissionStatus(employeeId: string, period: string, status: CommissionResult["status"]) {
+  return apiFetchClient<CommissionResult>(`/api/commissions/${employeeId}/${period}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
 export function login(email: string, password: string) {
   return apiFetchClient<User>("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
 }

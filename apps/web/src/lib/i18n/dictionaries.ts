@@ -87,6 +87,16 @@ export interface Dictionary {
     employee: string;
     amount: string;
     status: string;
+    comparisonTitle: string;
+    employeeDepartment: string;
+    liveRevenue: string;
+    snapshotRevenue: string;
+    commissionAmount: string;
+    totalPay: string;
+    noResult: string;
+    staleWarning: string;
+    advanceStatus: string;
+    periodLabel: string;
   };
   invoices: {
     title: string;
@@ -317,6 +327,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
       employee: "Funcionário",
       amount: "Valor",
       status: "Status",
+      comparisonTitle: "Comissão x Faturamento por funcionário",
+      employeeDepartment: "Departamento",
+      liveRevenue: "Faturamento atual",
+      snapshotRevenue: "Faturamento no cálculo",
+      commissionAmount: "Comissão",
+      totalPay: "Total a pagar",
+      noResult: "Sem cálculo",
+      staleWarning: "Desatualizado — recalcule",
+      advanceStatus: "Avançar status",
+      periodLabel: "Período",
     },
     invoices: {
       title: "Faturas",
@@ -545,6 +565,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
       employee: "Employee",
       amount: "Amount",
       status: "Status",
+      comparisonTitle: "Commission vs. Revenue by employee",
+      employeeDepartment: "Department",
+      liveRevenue: "Current revenue",
+      snapshotRevenue: "Revenue at calculation",
+      commissionAmount: "Commission",
+      totalPay: "Total pay",
+      noResult: "No calculation",
+      staleWarning: "Outdated — recalculate",
+      advanceStatus: "Advance status",
+      periodLabel: "Period",
     },
     invoices: {
       title: "Invoices",

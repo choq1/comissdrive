@@ -2,21 +2,32 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { DataTable } from "@/components/ui/DataTable";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { PeriodSelect } from "@/components/ui/PeriodSelect";
 import { TopCommissionedBarChart } from "@/components/commissions/TopCommissionedBarChart";
 import { DepartmentPieChart } from "@/components/commissions/DepartmentPieChart";
-import { getCommissionResults, getEmployees, getInvoices } from "@/lib/api";
+import { CommissionComparisonTable, CommissionComparisonRow } from "@/components/commissions/CommissionComparisonTable";
+import { CalculateCommissionsPanel } from "@/components/revenue/CalculateCommissionsPanel";
+import { getCommissionResults, getEmployees, getInvoices, getRevenue } from "@/lib/api";
+import { getCurrentUser } from "@/lib/session";
 import { formatCurrency, formatPeriodLabel } from "@/lib/format";
 import { getServerLocale } from "@/lib/i18n/getServerLocale";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { Invoice } from "@/types/domain";
 
-export default async function CommissionsPage() {
+export default async function CommissionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string }>;
+}) {
   const locale = await getServerLocale();
   const dict = dictionaries[locale];
-  const [employees, commissionResults, invoices] = await Promise.all([
+  const { period: periodParam } = await searchParams;
+  const [user, employees, commissionResults, invoices, revenueRecords] = await Promise.all([
+    getCurrentUser(),
     getEmployees(),
     getCommissionResults(),
     getInvoices(),
+    getRevenue(),
   ]);
 
   const employeeName = (employeeId: string) => employees.find((e) => e.id === employeeId)?.name ?? employeeId;
@@ -24,8 +35,8 @@ export default async function CommissionsPage() {
     employees.find((e) => e.id === employeeId)?.department ?? dict.common.notFound;
 
   const periods = Array.from(new Set(commissionResults.map((r) => r.period))).sort();
-  const latestPeriod = periods.at(-1);
-  const latestResults = commissionResults.filter((r) => r.period === latestPeriod);
+  const selectedPeriod = periodParam ?? periods.at(-1);
+  const latestResults = commissionResults.filter((r) => r.period === selectedPeriod);
 
   const totalPaidThisMonth = latestResults
     .filter((r) => r.status === "paid" || r.status === "approved")
@@ -58,9 +69,32 @@ export default async function CommissionsPage() {
     .sort((a, b) => (a.dueDate < b.dueDate ? 1 : -1))
     .slice(0, 8);
 
+  const comparisonRows: CommissionComparisonRow[] = employees
+    .filter((employee) => employee.status === "active")
+    .map((employee) => {
+      const result = latestResults.find((r) => r.employeeId === employee.id);
+      const liveRevenue =
+        revenueRecords.find((rr) => rr.employeeId === employee.id && rr.period === selectedPeriod)?.revenueAmount ??
+        0;
+      return {
+        employee,
+        liveRevenue,
+        snapshotRevenue: result?.revenue ?? null,
+        commissionAmount: result?.commissionAmount ?? null,
+        totalPay: result?.totalPay ?? null,
+        status: result?.status ?? null,
+        isStale: result != null && result.revenue !== liveRevenue,
+      };
+    })
+    .filter((row) => row.status !== null || row.liveRevenue > 0);
+
   return (
     <div className="flex flex-col gap-6 pb-10">
       <PageHeader title={dict.commissions.title} />
+
+      <div className="flex items-end justify-between gap-4 px-8">
+        <PeriodSelect periods={periods} selected={selectedPeriod} />
+      </div>
 
       <div className="grid grid-cols-1 gap-4 px-8 md:grid-cols-3">
         <KpiCard
@@ -72,10 +106,21 @@ export default async function CommissionsPage() {
         <KpiCard label={dict.commissions.averageCommissionRate} value={`${averageCommissionRate.toFixed(2)}%`} />
       </div>
 
+      {user?.role === "admin" && (
+        <div className="px-8">
+          <CalculateCommissionsPanel defaultPeriod={selectedPeriod} />
+        </div>
+      )}
+
+      <div className="px-8">
+        <h2 className="mb-3 text-sm font-medium text-slate-300">{dict.commissions.comparisonTitle}</h2>
+        <CommissionComparisonTable rows={comparisonRows} period={selectedPeriod} />
+      </div>
+
       <div className="grid grid-cols-1 gap-4 px-8 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
           <h2 className="mb-4 text-sm font-medium text-slate-300">
-            {dict.commissions.top5Title} {latestPeriod ? `(${formatPeriodLabel(latestPeriod, locale)})` : ""}
+            {dict.commissions.top5Title} {selectedPeriod ? `(${formatPeriodLabel(selectedPeriod, locale)})` : ""}
           </h2>
           <TopCommissionedBarChart data={topFive} />
         </div>
