@@ -90,7 +90,7 @@ Projeto Piloto/
 
 ## Modelo de dados
 
-- **Employee**: `id, code, name, role (cargo), department, baseSalary, tier (Gold/Silver), status`
+- **Employee**: `id, code, name, role (cargo), department, baseSalary, tier (Gold/Silver), status` — `code` é único (`@@unique`) desde a correção pós-fase-12 (2026-07-26): criar ou editar um funcionário com um código já usado por outro retorna 409.
 - **RevenueRecord**: `id, employeeId, period (YYYY-MM), revenueAmount` — faturamento agregado do funcionário no período. Único por `(employeeId, period)` desde a fase 12 (`@@unique`). Desde a fase 12, o valor normalmente **não é digitado diretamente** — é a soma de `Sale.netAmount` daquele par, recalculada automaticamente a cada escrita em `Sale` (ver `services/revenueAggregationService.ts`); ainda é possível cadastrar/importar um `RevenueRecord` direto (sem `Sale` por trás) para clientes que só têm o agregado, mas cuidado: se depois alguém lançar uma venda (`Sale`) para o mesmo par, o valor digitado é sobrescrito pela soma das vendas.
 - **Sale** (venda individual, fase 12): `id, employeeId, date (YYYY-MM-DD), period (YYYY-MM, derivado de date), store, itemDescription, itemSku?, quantity, grossAmount, netAmount` — é `netAmount` que alimenta o faturamento/comissão, não `grossAmount`. Ver `guia/07-vendas-e-faturamento.md`.
 - **CommissionRule**: `id, name, type (base | volumeBonus | tiered), scope (department | role | global), appliesTo (valor alvo do scope, ex: "Sales"; null quando scope=global), percentage, threshold`

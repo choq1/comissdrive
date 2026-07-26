@@ -48,7 +48,7 @@ enum UserRole {
 
 model Employee {
   id         String              @id
-  code       String
+  code       String              @unique
   name       String
   role       String
   department String

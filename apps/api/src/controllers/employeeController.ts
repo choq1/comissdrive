@@ -1,7 +1,12 @@
 import { NextFunction, Request, Response } from "express";
+import { Prisma } from "@prisma/client";
 import { employeeService } from "../services/employeeService";
 import { employeeSchema, employeeUpdateSchema } from "../schemas/employee.schema";
 import { HttpError } from "../middleware/errorHandler";
+
+function isDuplicateCodeError(err: unknown): boolean {
+  return err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002";
+}
 
 export const employeeController = {
   async list(_req: Request, res: Response, next: NextFunction) {
@@ -28,6 +33,10 @@ export const employeeController = {
       const employee = await employeeService.create(input);
       res.status(201).json(employee);
     } catch (err) {
+      if (isDuplicateCodeError(err)) {
+        next(new HttpError(409, "Já existe um funcionário cadastrado com esse código"));
+        return;
+      }
       next(err);
     }
   },
@@ -39,6 +48,10 @@ export const employeeController = {
       if (!employee) throw new HttpError(404, "Employee not found");
       res.json(employee);
     } catch (err) {
+      if (isDuplicateCodeError(err)) {
+        next(new HttpError(409, "Já existe um funcionário cadastrado com esse código"));
+        return;
+      }
       next(err);
     }
   },
