@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Users, DollarSign, FileText, Settings } from "lucide-react";
+import { LayoutGrid, Users, TrendingUp, DollarSign, FileText, Settings } from "lucide-react";
 import { useCurrentUser } from "@/contexts/UserContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { BrandLogo } from "@/components/layout/BrandLogo";
@@ -10,6 +10,7 @@ import { BrandLogo } from "@/components/layout/BrandLogo";
 const NAV_ITEMS = [
   { href: "/dashboard", key: "dashboard" as const, icon: LayoutGrid },
   { href: "/employees", key: "employees" as const, icon: Users },
+  { href: "/revenue", key: "revenue" as const, icon: TrendingUp },
   { href: "/commissions", key: "commissions" as const, icon: DollarSign },
   { href: "/invoices", key: "invoices" as const, icon: FileText },
   { href: "/settings", key: "settings" as const, icon: Settings, adminOnly: true },

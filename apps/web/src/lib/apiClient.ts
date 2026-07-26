@@ -1,4 +1,5 @@
-import { CommissionRule, CommissionTier, Employee, User } from "@/types/domain";
+import { CommissionResult, CommissionRule, CommissionTier, Employee, Sale, User } from "@/types/domain";
+import { ImportCommitResponse, ImportEntity, ImportPreviewResponse, RowResult } from "@/types/imports";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
 
@@ -15,6 +16,21 @@ export async function apiFetchClient<T>(path: string, init?: RequestInit): Promi
   }
 
   if (res.status === 204) return undefined as T;
+
+  return res.json() as Promise<T>;
+}
+
+/** Variante para upload multipart — sem Content-Type manual, o browser gera o boundary sozinho. */
+export async function apiFetchClientFormData<T>(path: string, formData: FormData): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}: ${await res.text()}`);
+  }
 
   return res.json() as Promise<T>;
 }
@@ -67,10 +83,43 @@ export function deleteEmployee(id: string) {
   return apiFetchClient<void>(`/api/employees/${id}`, { method: "DELETE" });
 }
 
+/** `period` nunca é enviado pelo client — o backend sempre deriva de `date`. */
+export function createSale(input: Omit<Sale, "id" | "period">) {
+  return apiFetchClient<Sale>("/api/sales", { method: "POST", body: JSON.stringify(input) });
+}
+
+export function updateSale(id: string, patch: Partial<Omit<Sale, "id" | "period">>) {
+  return apiFetchClient<Sale>(`/api/sales/${id}`, { method: "PUT", body: JSON.stringify(patch) });
+}
+
+export function deleteSale(id: string) {
+  return apiFetchClient<void>(`/api/sales/${id}`, { method: "DELETE" });
+}
+
+export function calculateCommissions(period: string) {
+  return apiFetchClient<CommissionResult[]>("/api/commissions/calculate", {
+    method: "POST",
+    body: JSON.stringify({ period }),
+  });
+}
+
 export function login(email: string, password: string) {
   return apiFetchClient<User>("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
 }
 
 export function logout() {
   return apiFetchClient<void>("/api/auth/logout", { method: "POST" });
+}
+
+export function previewImport(entity: ImportEntity, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiFetchClientFormData<ImportPreviewResponse>(`/api/imports/${entity}/preview`, formData);
+}
+
+export function commitImportRows(entity: ImportEntity, rows: RowResult["data"][], fileName: string) {
+  return apiFetchClient<ImportCommitResponse>(`/api/imports/${entity}/commit`, {
+    method: "POST",
+    body: JSON.stringify({ rows, fileName }),
+  });
 }

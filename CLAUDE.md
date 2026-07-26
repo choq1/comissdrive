@@ -79,10 +79,10 @@ Projeto Piloto/
         └── src/
             ├── app.ts          # cria o Express app (usado também nos testes)
             ├── index.ts        # entrypoint: só chama app.listen
-            ├── routes/         # employees, invoices, rules (+tiers), revenue, commissions, users (+ *.test.ts colocados)
+            ├── routes/         # employees, invoices, rules (+tiers), revenue, commissions, users, imports (+ *.test.ts colocados)
             ├── controllers/
-            ├── services/       # CRUD sobre o Prisma Client + commissionEngine.ts (motor de cálculo) + commissionResultService.ts (persistência/workflow)
-            ├── schemas/        # validação zod por entidade
+            ├── services/       # CRUD sobre o Prisma Client + commissionEngine.ts (motor de cálculo) + commissionResultService.ts (persistência/workflow) + importParsingService.ts/importService.ts (importação em massa, fase 11)
+            ├── schemas/        # validação zod por entidade + importConfigs.ts (mapeamento de planilha, fase 11)
             ├── lib/            # prisma.ts (singleton do PrismaClient), crudRepository.ts (fábrica de CRUD sobre um delegate Prisma)
             ├── scripts/        # seedPasswords.ts (seed de senha padrão para usuários de teste, fase 6)
             └── middleware/     # errorHandler.ts, auth.ts (requireAuth/requireRole, fase 6)
@@ -91,12 +91,14 @@ Projeto Piloto/
 ## Modelo de dados
 
 - **Employee**: `id, code, name, role (cargo), department, baseSalary, tier (Gold/Silver), status`
-- **RevenueRecord**: `id, employeeId, period (YYYY-MM), revenueAmount` — faturamento do funcionário no período, cadastrado pelo admin
+- **RevenueRecord**: `id, employeeId, period (YYYY-MM), revenueAmount` — faturamento agregado do funcionário no período. Único por `(employeeId, period)` desde a fase 12 (`@@unique`). Desde a fase 12, o valor normalmente **não é digitado diretamente** — é a soma de `Sale.netAmount` daquele par, recalculada automaticamente a cada escrita em `Sale` (ver `services/revenueAggregationService.ts`); ainda é possível cadastrar/importar um `RevenueRecord` direto (sem `Sale` por trás) para clientes que só têm o agregado, mas cuidado: se depois alguém lançar uma venda (`Sale`) para o mesmo par, o valor digitado é sobrescrito pela soma das vendas.
+- **Sale** (venda individual, fase 12): `id, employeeId, date (YYYY-MM-DD), period (YYYY-MM, derivado de date), store, itemDescription, itemSku?, quantity, grossAmount, netAmount` — é `netAmount` que alimenta o faturamento/comissão, não `grossAmount`. Ver `guia/07-vendas-e-faturamento.md`.
 - **CommissionRule**: `id, name, type (base | volumeBonus | tiered), scope (department | role | global), appliesTo (valor alvo do scope, ex: "Sales"; null quando scope=global), percentage, threshold`
 - **CommissionTier**: `id, ruleId, tierName, minRevenue, maxRevenue, percentage` — faixas de uma regra `type: "tiered"`
 - **CommissionResult** (calculado, persistido): `employeeId, period, baseSalary, revenue, appliedRules[], commissionAmount, totalPay, status (pending/approved/paid)`
 - **Invoice**: `id, employeeId, period, amount, status, dueDate, paidDate`
 - **User**: `id, name, email, role (admin/manager), employeeId?, passwordHash` — CRUD completo via `/api/users` (admin-only, desde a fase 5). `passwordHash` nunca é serializado nas respostas da API (`toPublicUser()` em `userController.ts`/`userService.ts` remove o campo); o cliente HTTP só manda `password` em texto puro no create/update, nunca recebe hash de volta. Login real e enforcement de permissão por role implementados na fase 6 (ver abaixo).
+- **ImportLog** (auditoria, fase 11): `id, entity, source (spreadsheet/ocr), fileName, uploadedBy, rowsTotal, rowsCommitted, rowsFailed, createdAt` — um registro por commit de importação em massa (nunca por preview). Sem CRUD/tela própria, só leitura via Prisma Studio se necessário.
 
 ## Regra de negócio — cálculo de comissão
 
@@ -119,7 +121,7 @@ As regras (`CommissionRule` / `CommissionTier`) são configuráveis pelo admin n
 ## Persistência (PostgreSQL + Prisma, fase 7)
 
 - **Banco**: PostgreSQL gerenciado no Supabase (free tier), conectado via `DATABASE_URL` (`apps/api/.env`, nunca commitado). Migrations e seed usam o **session pooler** do Supabase (host `*.pooler.supabase.com`, porta `5432`) — a porta `6543` (transaction pooler) não suporta os recursos que o `prisma migrate` precisa (prepared statements/advisory locks) e trava a operação.
-- **Schema**: `apps/api/prisma/schema.prisma`, um modelo Prisma por entidade de `types/domain.ts`. Enums do Prisma espelham os union types TS. `CommissionResult` não tem `id` próprio — chave primária composta `@@id([employeeId, period])`, igual ao shape do domínio. `CommissionTier.ruleId` tem `onDelete: Cascade` — apagar uma `CommissionRule` remove seus tiers automaticamente (antes era feito manualmente em código).
+- **Schema**: `apps/api/prisma/schema.prisma`, um modelo Prisma por entidade de `types/domain.ts`. Enums do Prisma espelham os union types TS. `CommissionResult` não tem `id` próprio — chave primária composta `@@id([employeeId, period])`, igual ao shape do domínio. `CommissionTier.ruleId` tem `onDelete: Cascade` — apagar uma `CommissionRule` remove seus tiers automaticamente (antes era feito manualmente em código). `RevenueRecord` tem `@@unique([employeeId, period])` desde a fase 12 — qualquer escrita nesse modelo (import ou agregação de `Sale`) usa `upsert`, nunca `create` puro, pra não colidir com a constraint.
 - **IDs**: continuam gerados em código como `` `${idPrefix}_${randomUUID()}` `` (`emp_...`, `rule_...`, `user_...`), não pelo Prisma — mantém o formato usado antes da migração.
 - **Acesso a dados**: `lib/prisma.ts` exporta um singleton `PrismaClient` (padrão `globalThis`, evita múltiplas instâncias no hot-reload do `ts-node-dev --respawn`). `lib/crudRepository.ts` é uma fábrica genérica sobre um delegate Prisma (`prisma.employee`, `prisma.user`, etc.) — mesma assinatura pública (`list/findById/create/update/remove`) de antes, então `controllers/*` não mudaram.
 - **Seed**: `apps/api/prisma/seed.ts` lê `prisma/seed-data/*.json` (cópia congelada dos antigos `src/data/*.json`) e popula o banco. Rodar com `npx prisma db seed --workspace=apps/api` (ou `cd apps/api && npx prisma db seed`).
@@ -147,10 +149,12 @@ CRUD completo (GET lista, GET por id, POST, PUT, DELETE) para cada entidade, mon
 - `/api/revenue` *(fase 3)*
 - `/api/users` *(fase 5)* — admin-only, inclusive leitura (fase 6)
 - `/api/auth` *(fase 6)*: `POST /login` (público, seta cookie `token` httpOnly JWT), `POST /logout` (público, limpa o cookie), `GET /me` (autenticado, devolve o usuário logado)
+- `/api/imports` *(fase 11)* — admin-only: `POST /:entity/preview` (multipart, campo `file`; `:entity` = `employee`/`revenue`/`invoice`/`sale`) parseia e valida a planilha sem gravar nada; `POST /:entity/commit` (JSON, `{ rows, fileName }`) revalida e grava as linhas revisadas em transação, registrando um `ImportLog`. Ver `guia/06-importacao-de-dados.md`.
+- `/api/sales` *(fase 12)* — CRUD de vendas granulares (leitura para admin+manager, mutações admin-only); toda mutação recalcula o `RevenueRecord` do par funcionário/período afetado. `GET /api/sales/ranking` (aceita `?period=&store=&employeeId=`) agrega por `itemDescription` (soma de venda líquida/bruta/quantidade, contagem). Ver `guia/07-vendas-e-faturamento.md`.
 
 Endpoints do motor de cálculo *(fase 3)*:
 
-- `POST /api/commissions/calculate` — body `{ period }`, calcula/atualiza os resultados de comissão de todos os funcionários ativos com faturamento cadastrado naquele período.
+- `POST /api/commissions/calculate` — body `{ period }`, calcula/atualiza os resultados de comissão de todos os funcionários ativos com faturamento cadastrado naquele período. Sem gatilho na UI até a fase 12 (endpoint existia, mas nada o chamava a partir da tela) — agora acionado pelo painel "Calcular comissões" em `/revenue`.
 - `GET /api/commissions` — lista resultados (`?period=`, `?employeeId=` opcionais).
 - `PATCH /api/commissions/:employeeId/:period/status` — body `{ status }`, avança o status (`pending → approved → paid`).
 
@@ -171,7 +175,7 @@ Validação de payload via `zod` (`src/schemas/`), erros padronizados em `{ erro
 - **Next.js 16.2.10 + React 19.2.4** — versão com breaking changes relevantes em relação ao Next.js "clássico" (ver `apps/web/AGENTS.md`, que manda checar `node_modules/next/dist/docs/` antes de mexer no App Router). O que já mudou e foi levado em conta: `params`/`searchParams` de página são `Promise` (nenhuma tela usa ainda, mas vale lembrar nas próximas); `fetch` em Server Components não é cacheado automaticamente nessa versão — por isso `lib/api.ts` usa `cache: "no-store"` explicitamente em toda chamada, garantindo dado sempre fresco independente do modelo de cache ativo no projeto.
 - **Padrão de leitura**: cada `app/*/page.tsx` é Server Component, busca direto da API Express via `lib/api.ts` e passa os dados como props para Client Components (`"use client"`) que cuidam de interatividade local (busca/filtro em `EmployeesTable`, gráficos Recharts).
 - **Padrão de mutação (fase 5 em diante)**: `RulesEditor`/`UserPermissionsPanel` são os primeiros Client Components a fazer `POST`/`PUT`/`DELETE` — chamam `lib/api.ts` direto contra a API Express (CORS aberto, `app.use(cors())` sem opções) e, após sucesso, chamam `router.refresh()` (`next/navigation`) para re-buscar os dados do Server Component pai. Sem Server Actions, sem lib de estado global.
-- **Telas**: `/login` (form email/senha, fase 6), `/dashboard` (KPIs, gráfico de tendência de comissão, top performers, pagamentos recentes), `/employees` (tabela com busca/filtro por department + CRUD completo admin-only desde a fase 9), `/commissions` (KPIs de analytics, gráfico de barras top 5, gráfico de pizza por department, invoices recentes), `/invoices` (tabela simples), `/settings` (editor de `CommissionRule`/`CommissionTier` + painel de `User` — admin-only, com enforcement real desde a fase 6: `proxy.ts` redireciona managers e a própria page reforça o guard).
+- **Telas**: `/login` (form email/senha, fase 6), `/dashboard` (KPIs, gráfico de tendência de comissão, top performers, pagamentos recentes), `/employees` (tabela com busca/filtro por department + CRUD completo admin-only desde a fase 9), `/revenue` (fase 12 — KPIs de faturamento líquido/bruto/ticket médio do período mais recente, CRUD de `Sale` admin-only via `SalesTable.tsx`, ranking de itens, painel "Calcular comissões" admin-only, e desde um ajuste pós-fase-12 também o painel de Importação em massa — `BulkImportPanel.tsx` mora em `components/revenue/`, não mais em `components/settings/`; movido pra cá porque importar e ver o resultado na mesma tela é mais direto do que fazer isso em Configurações e navegar até outra tela pra conferir), `/commissions` (KPIs de analytics, gráfico de barras top 5, gráfico de pizza por department, invoices recentes), `/invoices` (tabela simples), `/settings` (editor de `CommissionRule`/`CommissionTier` + painel de `User` — admin-only, com enforcement real desde a fase 6: `proxy.ts` redireciona managers e a própria page reforça o guard).
 - **Internacionalização (fase 8)**: PT-BR (padrão) e EN, com botão de troca na Sidebar (`LanguageToggle.tsx`). Strings de interface vivem em `lib/i18n/dictionaries.ts` (tipado por `Dictionary`); Server Components leem o idioma via cookie `locale` (`getServerLocale.ts`), Client Components via `useLanguage()` (`LanguageContext.tsx`). `formatCurrency`/`formatPeriodLabel` (`lib/format.ts`) são locale-aware. **Dados de negócio (nome/department/role cadastrados pelo admin) não são traduzidos automaticamente** — ver `guia/02-idioma-pt-br-en.md` e `guia/03-funcionarios-e-dados.md`.
 - **Dívida técnica registrada**: `apps/web/src/types/domain.ts` é uma cópia manual de `apps/api/src/types/domain.ts` (sem pacote compartilhado no monorepo ainda) — ao mudar um, replicar a mudança no outro.
 - **Branding centralizado (fase 10)**: nome, descrição, domínio e paths dos logos vêm de `lib/branding.ts` (fonte única de verdade), renderizados por `components/layout/BrandLogo.tsx` (usa `<img>` puro, não `next/image` — SVG local é bloqueado pelo otimizador de imagem por padrão). Artes em `public/brand/*.svg` e favicon via convenção nativa do App Router (`app/icon.svg` + `app/apple-icon.png`, sem `favicon.ico`). Trocar de marca para um cliente novo = sobrescrever os arquivos de `public/brand/` (mesmos nomes) + editar `branding.ts`, sem mexer em JSX — ver `guia/01-nome-e-marca.md`.
@@ -203,8 +207,12 @@ Cada fase gera um plano próprio salvo em `plan/`.
 8. **`plan/08-internacionalizacao-pt-br-en.md`** — Internacionalização PT-BR/EN: dicionário de strings (`lib/i18n/dictionaries.ts`), `LanguageContext`/`LanguageToggle`, `formatCurrency`/`formatPeriodLabel` locale-aware (R$/$, sem conversão de câmbio). ✅
 9. **`plan/09-crud-employees-frontend.md`** — Tela de CRUD completo de Employee no frontend (`EmployeesTable.tsx`): botão adicionar + editar/excluir por linha, admin-only, mesmo padrão de `RulesEditor`/`UserPermissionsPanel`. Backend já tinha os endpoints prontos. ✅
 10. **`plan/10-rebrand-comisspro.md`** — Rebrand de "Commissioning" para "ComissPro": sistema de branding centralizado (`lib/branding.ts` + `BrandLogo.tsx` + `public/brand/`), favicon/app icon via convenção nativa do Next (`app/icon.svg`), domínio de e-mail dos usuários (`comisspro.com.br`). ✅
-11. Deploy.
-12. **CI/CD (GitHub Actions)** — quando o repositório for para o GitHub, workflow que roda `npm test` a cada push/PR, como camada adicional aos hooks locais. O push continua exigindo aprovação humana; o CI só impede merge/deploy com testes quebrados.
+11. **`plan/11-importacao-planilhas.md`** — Importação em massa de Funcionários/Faturamento/Faturas via planilha `.xlsx`/`.csv`: parsing genérico (`importParsingService.ts`) + configs por entidade com aliases de coluna em PT-BR (`importConfigs.ts`), fluxo preview→commit (`/api/imports`), tela `BulkImportPanel.tsx` (inicialmente em Settings, movida pra `/revenue` num ajuste pós-fase-12 — ver item 12), auditoria (`ImportLog`). ✅
+12. **`plan/12-modulo-vendas.md`** — Módulo de Vendas/Faturamento: modelo `Sale` granular (venda bruta/líquida/data/loja/item), `RevenueRecord` passa a ser agregado (soma de `netAmount`, único por funcionário/período) recalculado automaticamente a cada escrita em `Sale`, tela `/revenue` (CRUD de vendas, ranking de itens, painel de cálculo de comissão), 4ª entidade de import (`sale`). ✅
+13. `plan/13-aprovacao-importacoes.md` — Fluxo de aprovação para importações em massa (todas as entidades): em vez de gravar direto ao confirmar, a importação fica pendente até um admin aprovar ou rejeitar numa tela própria. Não implementado ainda.
+14. `plan/14-ocr-documentos.md` — OCR de imagens/documentos escaneados (Tesseract.js), reaproveitando o fluxo de import, para um layout de documento fixo e conhecido. Não implementado ainda.
+15. Deploy.
+16. **CI/CD (GitHub Actions)** — quando o repositório for para o GitHub, workflow que roda `npm test` a cada push/PR, como camada adicional aos hooks locais. O push continua exigindo aprovação humana; o CI só impede merge/deploy com testes quebrados.
 
 ## Convenções
 

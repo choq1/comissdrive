@@ -21,6 +21,19 @@ export interface RevenueRecord {
   revenueAmount: number;
 }
 
+export interface Sale {
+  id: string;
+  employeeId: string;
+  date: string; // YYYY-MM-DD
+  period: string; // YYYY-MM, derivado de `date`
+  store: string;
+  itemDescription: string;
+  itemSku?: string | null;
+  quantity: number;
+  grossAmount: number;
+  netAmount: number;
+}
+
 export type CommissionRuleType = "base" | "volumeBonus" | "tiered";
 export type CommissionRuleScope = "department" | "role" | "global";
 
@@ -82,3 +95,17 @@ export interface User {
 
 /** Shape que a API devolve nas respostas HTTP — nunca inclui passwordHash. */
 export type PublicUser = Omit<User, "passwordHash">;
+
+export type ImportSource = "spreadsheet" | "ocr";
+
+export interface ImportLog {
+  id: string;
+  entity: string;
+  source: ImportSource;
+  fileName: string;
+  uploadedBy: string;
+  rowsTotal: number;
+  rowsCommitted: number;
+  rowsFailed: number;
+  createdAt: string;
+}

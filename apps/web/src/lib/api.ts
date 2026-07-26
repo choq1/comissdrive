@@ -1,5 +1,15 @@
 import { cookies } from "next/headers";
-import { CommissionResult, CommissionRule, CommissionTier, Employee, Invoice, RevenueRecord, User } from "@/types/domain";
+import {
+  CommissionResult,
+  CommissionRule,
+  CommissionTier,
+  Employee,
+  Invoice,
+  ItemRankingRow,
+  RevenueRecord,
+  Sale,
+  User,
+} from "@/types/domain";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
 
@@ -56,4 +66,17 @@ export function getCommissionResults(params?: { period?: string; employeeId?: st
 
 export function getUsers() {
   return apiFetch<User[]>("/api/users");
+}
+
+export function getSales() {
+  return apiFetch<Sale[]>("/api/sales");
+}
+
+export function getItemRanking(params?: { period?: string; store?: string; employeeId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.period) query.set("period", params.period);
+  if (params?.store) query.set("store", params.store);
+  if (params?.employeeId) query.set("employeeId", params.employeeId);
+  const qs = query.toString();
+  return apiFetch<ItemRankingRow[]>(`/api/sales/ranking${qs ? `?${qs}` : ""}`);
 }

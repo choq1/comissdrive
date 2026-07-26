@@ -8,9 +8,11 @@ import { revenueService } from "./revenueService";
 // de revenue.json/commissionResults.json (2024-03/04/05) usado pelo frontend.
 const PERIOD = "2099-05";
 const createdRevenueIds: string[] = [];
+let activeEmployeeCount = 0;
 
 beforeAll(async () => {
   const employees = await employeeService.list();
+  activeEmployeeCount = employees.filter((e) => e.status === "active").length;
   for (const employee of employees) {
     const revenueAmount = employee.id === "emp_001" ? 80000 : 10000;
     const record = await revenueService.create({ employeeId: employee.id, period: PERIOD, revenueAmount });
@@ -30,7 +32,7 @@ describe("commissionResultService", () => {
   it("calculates commission results for every active employee with revenue in the period", async () => {
     const results = await commissionResultService.calculateForPeriod(PERIOD);
 
-    expect(results.length).toBe(7);
+    expect(results.length).toBe(activeEmployeeCount);
     expect(results.every((r) => r.status === "pending")).toBe(true);
 
     const ana = results.find((r) => r.employeeId === "emp_001")!;

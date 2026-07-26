@@ -62,6 +62,24 @@ model RevenueRecord {
   employeeId    String
   period        String
   revenueAmount Float
+
+  @@unique([employeeId, period])
+}
+
+model Sale {
+  id              String  @id
+  employeeId      String
+  date            String // YYYY-MM-DD
+  period          String // YYYY-MM, derivado de `date` na gravação
+  store           String
+  itemDescription String
+  itemSku         String?
+  quantity        Int     @default(1)
+  grossAmount     Float
+  netAmount       Float
+
+  @@index([employeeId, period])
+  @@index([itemDescription])
 }
 
 model CommissionRule {
@@ -115,4 +133,16 @@ model User {
   role         UserRole
   employeeId   String?
   passwordHash String
+}
+
+model ImportLog {
+  id            String   @id
+  entity        String
+  source        String
+  fileName      String
+  uploadedBy    String
+  rowsTotal     Int
+  rowsCommitted Int
+  rowsFailed    Int
+  createdAt     DateTime @default(now())
 }

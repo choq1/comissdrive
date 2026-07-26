@@ -2,9 +2,11 @@ import { Router } from "express";
 import { authRouter } from "./auth.routes";
 import { commissionsRouter } from "./commissions.routes";
 import { employeesRouter } from "./employees.routes";
+import { importsRouter } from "./imports.routes";
 import { invoicesRouter } from "./invoices.routes";
 import { revenueRouter } from "./revenue.routes";
 import { rulesRouter } from "./rules.routes";
+import { salesRouter } from "./sales.routes";
 import { usersRouter } from "./users.routes";
 
 export const apiRouter = Router();
@@ -16,3 +18,5 @@ apiRouter.use("/rules", rulesRouter);
 apiRouter.use("/revenue", revenueRouter);
 apiRouter.use("/commissions", commissionsRouter);
 apiRouter.use("/users", usersRouter);
+apiRouter.use("/imports", importsRouter);
+apiRouter.use("/sales", salesRouter);

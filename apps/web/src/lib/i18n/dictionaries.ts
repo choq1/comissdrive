@@ -14,6 +14,7 @@ export interface Dictionary {
   sidebar: {
     dashboard: string;
     employees: string;
+    revenue: string;
     commissions: string;
     invoices: string;
     settings: string;
@@ -96,6 +97,81 @@ export interface Dictionary {
     amount: string;
     status: string;
   };
+  revenue: {
+    title: string;
+    totalNet: string;
+    totalGross: string;
+    averageTicket: string;
+    salesTable: string;
+    addSale: string;
+    addSaleTitle: string;
+    editSaleTitle: string;
+    createSale: string;
+    empty: string;
+    employee: string;
+    date: string;
+    store: string;
+    filterByStore: string;
+    itemDescription: string;
+    itemSku: string;
+    quantity: string;
+    grossAmount: string;
+    netAmount: string;
+    deleteSaleAria: string;
+    rankingTitle: string;
+    rankingItem: string;
+    rankingNet: string;
+    rankingQuantity: string;
+    calculateCommissions: string;
+    calculateCommissionsTitle: string;
+    period: string;
+    calculate: string;
+    calculating: string;
+    calculateSuccess: string;
+    imports: {
+      heading: string;
+      entity: string;
+      entityEmployee: string;
+      entityRevenue: string;
+      entityInvoice: string;
+      entitySale: string;
+      chooseFile: string;
+      analyze: string;
+      noFileSelected: string;
+      analyzing: string;
+      rowNumber: string;
+      errors: string;
+      confirmImport: string;
+      confirming: string;
+      summary: string;
+      committed: string;
+      failed: string;
+      noErrors: string;
+      resultSummary: string;
+      fields: {
+        code: string;
+        name: string;
+        role: string;
+        department: string;
+        baseSalary: string;
+        tier: string;
+        status: string;
+        employeeId: string;
+        period: string;
+        revenueAmount: string;
+        amount: string;
+        dueDate: string;
+        paidDate: string;
+        date: string;
+        store: string;
+        itemDescription: string;
+        itemSku: string;
+        quantity: string;
+        grossAmount: string;
+        netAmount: string;
+      };
+    };
+  };
   settings: {
     title: string;
     rules: {
@@ -168,6 +244,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     sidebar: {
       dashboard: "Dashboard",
       employees: "Funcionários",
+      revenue: "Faturamento",
       commissions: "Comissões",
       invoices: "Faturas",
       settings: "Configurações",
@@ -250,6 +327,81 @@ export const dictionaries: Record<Locale, Dictionary> = {
       amount: "Valor",
       status: "Status",
     },
+    revenue: {
+      title: "Faturamento",
+      totalNet: "Venda líquida total",
+      totalGross: "Venda bruta total",
+      averageTicket: "Ticket médio",
+      salesTable: "Vendas",
+      addSale: "Adicionar venda",
+      addSaleTitle: "Adicionar venda",
+      editSaleTitle: "Editar venda",
+      createSale: "Criar venda",
+      empty: "Nenhuma venda cadastrada ainda.",
+      employee: "Funcionário",
+      date: "Data",
+      store: "Loja",
+      filterByStore: "Filtrar por loja",
+      itemDescription: "Descrição do item",
+      itemSku: "Código do item",
+      quantity: "Quantidade",
+      grossAmount: "Venda bruta",
+      netAmount: "Venda líquida",
+      deleteSaleAria: "Excluir venda",
+      rankingTitle: "Ranking de itens",
+      rankingItem: "Item",
+      rankingNet: "Venda líquida",
+      rankingQuantity: "Quantidade",
+      calculateCommissions: "Calcular comissões",
+      calculateCommissionsTitle: "Calcular comissões do período",
+      period: "Período",
+      calculate: "Calcular",
+      calculating: "Calculando...",
+      calculateSuccess: "Comissões calculadas com sucesso.",
+      imports: {
+        heading: "Importação em massa",
+        entity: "Tipo de dado",
+        entityEmployee: "Funcionários",
+        entityRevenue: "Faturamento",
+        entityInvoice: "Faturas",
+        entitySale: "Vendas",
+        chooseFile: "Selecionar planilha (.xlsx ou .csv)",
+        analyze: "Analisar",
+        noFileSelected: "Selecione um arquivo para analisar.",
+        analyzing: "Analisando...",
+        rowNumber: "Linha",
+        errors: "Erros",
+        confirmImport: "Confirmar importação",
+        confirming: "Importando...",
+        summary: "{valid} de {total} linhas válidas",
+        committed: "importadas",
+        failed: "com erro",
+        noErrors: "Nenhum erro encontrado.",
+        resultSummary: "Resultado da importação",
+        fields: {
+          code: "Código",
+          name: "Nome",
+          role: "Cargo",
+          department: "Departamento",
+          baseSalary: "Salário base",
+          tier: "Tier",
+          status: "Status",
+          employeeId: "Funcionário",
+          period: "Período",
+          revenueAmount: "Faturamento",
+          amount: "Valor",
+          dueDate: "Vencimento",
+          paidDate: "Data de pagamento",
+          date: "Data",
+          store: "Loja",
+          itemDescription: "Descrição do item",
+          itemSku: "Código do item",
+          quantity: "Quantidade",
+          grossAmount: "Venda bruta",
+          netAmount: "Venda líquida",
+        },
+      },
+    },
     settings: {
       title: "Configurações Globais & Regras",
       rules: {
@@ -320,6 +472,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     sidebar: {
       dashboard: "Dashboard",
       employees: "Employees",
+      revenue: "Revenue",
       commissions: "Commissions",
       invoices: "Invoices",
       settings: "Settings",
@@ -401,6 +554,81 @@ export const dictionaries: Record<Locale, Dictionary> = {
       dueDate: "Due Date",
       amount: "Amount",
       status: "Status",
+    },
+    revenue: {
+      title: "Revenue",
+      totalNet: "Total net sales",
+      totalGross: "Total gross sales",
+      averageTicket: "Average ticket",
+      salesTable: "Sales",
+      addSale: "Add sale",
+      addSaleTitle: "Add sale",
+      editSaleTitle: "Edit sale",
+      createSale: "Create sale",
+      empty: "No sales recorded yet.",
+      employee: "Employee",
+      date: "Date",
+      store: "Store",
+      filterByStore: "Filter by store",
+      itemDescription: "Item description",
+      itemSku: "Item SKU",
+      quantity: "Quantity",
+      grossAmount: "Gross amount",
+      netAmount: "Net amount",
+      deleteSaleAria: "Delete sale",
+      rankingTitle: "Item ranking",
+      rankingItem: "Item",
+      rankingNet: "Net sales",
+      rankingQuantity: "Quantity",
+      calculateCommissions: "Calculate commissions",
+      calculateCommissionsTitle: "Calculate commissions for period",
+      period: "Period",
+      calculate: "Calculate",
+      calculating: "Calculating...",
+      calculateSuccess: "Commissions calculated successfully.",
+      imports: {
+        heading: "Bulk import",
+        entity: "Data type",
+        entityEmployee: "Employees",
+        entityRevenue: "Revenue",
+        entityInvoice: "Invoices",
+        entitySale: "Sales",
+        chooseFile: "Select spreadsheet (.xlsx or .csv)",
+        analyze: "Analyze",
+        noFileSelected: "Select a file to analyze.",
+        analyzing: "Analyzing...",
+        rowNumber: "Row",
+        errors: "Errors",
+        confirmImport: "Confirm import",
+        confirming: "Importing...",
+        summary: "{valid} of {total} valid rows",
+        committed: "imported",
+        failed: "with errors",
+        noErrors: "No errors found.",
+        resultSummary: "Import result",
+        fields: {
+          code: "Code",
+          name: "Name",
+          role: "Role",
+          department: "Department",
+          baseSalary: "Base salary",
+          tier: "Tier",
+          status: "Status",
+          employeeId: "Employee",
+          period: "Period",
+          revenueAmount: "Revenue",
+          amount: "Amount",
+          dueDate: "Due date",
+          paidDate: "Paid date",
+          date: "Date",
+          store: "Store",
+          itemDescription: "Item description",
+          itemSku: "Item SKU",
+          quantity: "Quantity",
+          grossAmount: "Gross amount",
+          netAmount: "Net amount",
+        },
+      },
     },
     settings: {
       title: "Global Settings & Rules",

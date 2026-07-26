@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { Prisma } from "@prisma/client";
 import { revenueService } from "../services/revenueService";
 import { revenueSchema, revenueUpdateSchema } from "../schemas/revenue.schema";
 import { HttpError } from "../middleware/errorHandler";
@@ -28,6 +29,10 @@ export const revenueController = {
       const record = await revenueService.create(input);
       res.status(201).json(record);
     } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        next(new HttpError(409, "Já existe um registro de faturamento para esse funcionário/período"));
+        return;
+      }
       next(err);
     }
   },
