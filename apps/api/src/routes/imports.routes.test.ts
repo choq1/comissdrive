@@ -11,7 +11,7 @@ async function buildRevenueWorkbookBuffer(): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("dados");
   worksheet.addRow(["Funcionário", "Período", "Faturamento"]);
-  worksheet.addRow(["E001", "2099-03", 5000]);
+  worksheet.addRow(["emp_001", "2099-03", 5000]);
   worksheet.addRow(["NAO_EXISTE", "2099-03", 1000]);
   const arrayBuffer = await workbook.xlsx.writeBuffer();
   return Buffer.from(arrayBuffer);
@@ -71,7 +71,7 @@ describe("Imports routes", () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("dados");
     worksheet.addRow(["Funcionário", "Período", "Faturamento"]);
-    worksheet.addRow(["E001", "03/2099", 5000]);
+    worksheet.addRow(["emp_001", "03/2099", 5000]);
     const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
     const previewRes = await request(app)
@@ -124,8 +124,8 @@ describe("Imports routes", () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("dados");
     worksheet.addRow(["Funcionário", "Data", "Loja", "Descrição do item", "Quantidade", "Venda bruta", "Venda líquida"]);
-    worksheet.addRow(["E001", "10/04/2099", "Loja Centro", "Camiseta", 2, 200, 180]);
-    worksheet.addRow(["E001", "20/04/2099", "Loja Centro", "Calça", 1, 300, 270]);
+    worksheet.addRow(["emp_001", "10/04/2099", "Loja Centro", "Camiseta", 2, 200, 180]);
+    worksheet.addRow(["emp_001", "20/04/2099", "Loja Centro", "Calça", 1, 300, 270]);
     const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
     const previewRes = await request(app)
